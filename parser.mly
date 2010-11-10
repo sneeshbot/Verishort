@@ -5,7 +5,7 @@
 %token EOF
 
 %start sourcecode
-%type <Ast.top> sourcecode 
+%type <Ast.sourcecode> sourcecode 
 
 %%
 
