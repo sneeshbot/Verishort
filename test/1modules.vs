@@ -1,1 +1,1 @@
-module mod (inputs a;outputs b) {}
+module mod (input a;output b) {}
