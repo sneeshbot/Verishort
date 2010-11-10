@@ -14,8 +14,8 @@ rule token = parse
 	| "input" {INPUT}		
     | "output" {OUTPUT}
 	| eof { EOF }										(*EOF*)
-	| ['a'-'z' 'A'-'Z' '_']['a'-'z' 'A'-'Z' '0'-'9' '_' '$']* as var { VAR(var) }
-	| _ as char { raise (FAILURE("illegal character " ^ Char.escaped char)) }
+	| ['a'-'z' 'A'-'Z' '_']['a'-'z' 'A'-'Z' '0'-'9' '_' '$']* as var { ID(var) }
+	| _ as char { raise (Failure("illegal character " ^ Char.escaped char)) }
 
 and comment = parse
   "*/" { token lexbuf }
