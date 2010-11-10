@@ -2,12 +2,25 @@
 
 rule token = parse 
 	[' ' '\t' '\r' '\n'] 	{token lexbuf}	 			(*Whitespace*)
-	| "/*"_*"*/"|"//"_*'\n' { COMMENT }					(*Comments.  These are not the same as example comments in microC because we want to translate this thorough instead of discarding*)
-	| '(' { LPAREN }	| ')' { RPAREN }				(*Punctuation*)
-	| '{' { LBRACE }	| '}' { RBRACE }
-	| ';' { SEMICOLON } | ',' { COMMA }
+	| "/*"     { comment lexbuf }           (* Comments *)
+| "//"     { comment2 lexbuf }
+	| '(' { LPAREN }	
+    | ')' { RPAREN }				(*Punctuation*)
+	| '{' { LBRACE }	
+    | '}' { RBRACE }
+	| ';' { SEMICOLON } 
+    | ',' { COMMA }
 	| "module" { MODULE}								(*Keywords*)
-	| "input" {INPUT}		| "output" {OUTPUT}
+	| "input" {INPUT}		
+    | "output" {OUTPUT}
 	| eof { EOF }										(*EOF*)
-	| ['a'-'z' 'A'-'Z']['a'-'z' 'A'-'Z' '0'-'9' '_']* as var { VAR(var) }
+	| ['a'-'z' 'A'-'Z' '_']['a'-'z' 'A'-'Z' '0'-'9' '_' '$']* as var { VAR(var) }
 	| _ as char { raise (FAILURE("illegal character " ^ Char.escaped char)) }
+
+and comment = parse
+  "*/" { token lexbuf }
+| _    { comment lexbuf }
+
+and comment2 = parse
+  "\n" { token lexbuf }
+| _ {comment lexbuf}
