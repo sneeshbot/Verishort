@@ -1,7 +1,7 @@
 #lex&yacc
 scanner.ml: scanner.mll
 	ocamllex scanner.mll # create scanner.ml
-parser.mli: parser.mly ast.mli
+parser.mli: parser.mly ast.ml
 	ocamlyacc parser.mly # create parser.ml and parser.mli
 
 #mli
