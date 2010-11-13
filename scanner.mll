@@ -1,20 +1,62 @@
-{ open Parser}
+{ open Parser }
 
 rule token = parse 
-	[' ' '\t' '\r' '\n'] 	{token lexbuf}	 			(*Whitespace*)
+	[' ' '\t' '\r' '\n'] 	{ token lexbuf }	 			(*Whitespace*)
 	| "/*"     { comment lexbuf }           (* Comments *)
-| "//"     { comment2 lexbuf }
+  | "//"     { comment2 lexbuf }
 	| '(' { LPAREN }	
-    | ')' { RPAREN }				(*Punctuation*)
+  | ')' { RPAREN }				(*Punctuation*)
 	| '{' { LBRACE }	
-    | '}' { RBRACE }
+  | '}' { RBRACE }
+	| '[' { LBRACKET }
+	| ']' { RBRACKET }
 	| ';' { SEMICOLON } 
-    | ',' { COMMA }
-	| "module" { MODULE}								(*Keywords*)
-	| "input" {INPUT}		
-    | "output" {OUTPUT}
-	| eof { EOF }										(*EOF*)
-	| ['a'-'z' 'A'-'Z' '_']['a'-'z' 'A'-'Z' '0'-'9' '_' '$']* as var { ID(var) }
+  | ',' { COMMA }
+	| ['0' - '9']+ 'd' as var { LIT( int_of_string (String.sub var 0 (String.length var - 1) ) ) } (* Literals *)
+	| ['0' '1' 'x']+ 'b' as var { XLIT(String.sub var 0 (String.length var - 1)) } 
+	| ['0' '1']+ 'b' as var { LIT ( (* something *) ) }
+	| ['0' - '9']+ as var { DECLIT( int_of_string var ) }
+	| "++" { INCREMENT } (* Operators *) 
+	| "--" { DECREMENT } 
+	| '+'  { PLUS }  
+	| '-'  { MINUS }
+	| '*'  { MULTIPLY }
+	| '/'  { DIVIDE }
+	| '%'  { MODULUS }
+	| "<<" { LSHIFT }
+	| ">>" { RSHIFT }
+	| '\'' { SIGEXT }
+	| "!&" { NAND }
+	| "!|" { NOR }
+	| "!^" { NXOR }
+	| '!'  { NOT }
+	| '&'  { AND }
+	| '|'  { OR }
+	| '^'  { XOR }
+	| "==" { EQ }
+	| "!=" { NE }
+	| "<=" { LE }
+	| ">=" { GE }
+	| '<'  { LT }
+	| '>'  { GT }
+	| '='  { ASSIGN }
+	| "case"      { CASE }  (*Keywords*)
+	| "clock"     { CLOCK }
+	| "else"      { ELSE }
+	| "for"       { FOR }
+	| "if"        { IF }
+	| "input"     { INPUT }
+	| "module"    { MODULE }
+	| "negedge"	  { NEGEDGE }							
+  | "output"    { OUTPUT }
+	| "parameter" { PARAMETER }
+	| "posedge"   { POSEDGE }
+	| "register"  { REG }
+	| "return"    { RETURN }
+	| "reset"     { RESET }
+	| "wire"      { WIRE }
+	| eof         { EOF }										(*EOF*)
+	| ['a'-'z' 'A'-'Z' '_']['a'-'z' 'A'-'Z' '0'-'9' '_']* as var { ID(var) }
 	| _ as char { raise (Failure("illegal character " ^ Char.escaped char)) }
 
 and comment = parse
