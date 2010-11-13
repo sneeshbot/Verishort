@@ -12,6 +12,7 @@ rule token = parse
 	| ']' { RBRACKET }
 	| ';' { SEMICOLON } 
   | ',' { COMMA }
+	| ':' { COLON }
 	| ['0' - '9']+ 'd' as var { LIT( int_of_string (String.sub var 0 (String.length var - 1) ) ) } (* Literals *)
 	| ['0' '1' 'x']+ 'b' as var { XLIT(String.sub var 0 (String.length var - 1)) } 
 	| ['0' '1']+ 'b' as var { LIT ( (* something *) ) }
@@ -28,7 +29,7 @@ rule token = parse
 	| '\'' { SIGEXT }
 	| "!&" { NAND }
 	| "!|" { NOR }
-	| "!^" { NXOR }
+	| "!^" { XNOR }
 	| '!'  { NOT }
 	| '&'  { AND }
 	| '|'  { OR }
