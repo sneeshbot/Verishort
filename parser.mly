@@ -1,7 +1,7 @@
 %{ open Ast %}
 
 %token SEMICOLON LPAREN RPAREN LBRACE RBRACE COMMA COLON LBRACKET RBRACKET EOF
-%token CASE CLOCK ELSE FOR IF INPUT MODULE NEGEDGE OUTPUT PARAMETER POSEDGE REG RESET RETURN WIRE
+%token CASE CLOCK CONCAT ELSE FOR IF INPUT MODULE NEGEDGE OUTPUT PARAMETER POSEDGE REG RESET RETURN WIRE
 %token ASSIGN NOT OR XOR AND NOR XNOR NAND EQ NE GT GE LT LE LSHIFT RSHIFT PLUS MINUS MULTIPLY DIVIDE MODULUS SIGEXT
 %token NOELSE
 %token <string> ID
@@ -95,20 +95,20 @@ wire_decl_with_opt_init_list:
 | wire_decl_with_opt_init_list COMMA wire_decl_with_opt_init { $3 :: $1 }
 
 wire_decl_with_opt_init:
-  ID { { decltype = Wire, declname = $1, decl_width = 1, init = NoExpr } }
-| ID LBRACKET DECLIT RBRACKET { { decltype = Wire, declname = $1, decl_width = $3, init = NoExpr } }
-| ID ASSIGN expr { { decltype = Wire, declname = $1, decl_width = 1, init = $3 } }
-| ID LBRACKET DECLIT RBRACKET ASSIGN expr { { decltype = Wire, declname = $1, decl_width = $3, init = $6 } }
+  ID { { decltype = Wire; declname = $1; declwidth = 1; init = Noexpr } }
+| ID LBRACKET DECLIT RBRACKET { { decltype = Wire; declname = $1; declwidth = $3; init = Noexpr } }
+| ID ASSIGN expr { { decltype = Wire; declname = $1; declwidth = 1; init = $3 } }
+| ID LBRACKET DECLIT RBRACKET ASSIGN expr { { decltype = Wire; declname = $1; declwidth = $3; init = $6 } }
 
 reg_decl_with_opt_init_list:
   reg_decl_with_opt_init { [$1] }
 | reg_decl_with_opt_init_list COMMA reg_decl_with_opt_init { $3 :: $1 }
 
 reg_decl_with_opt_init:
-  ID { { decltype = Reg, declname = $1, decl_width = 1, init = NoExpr } }
-| ID LBRACKET DECLIT RBRACKET { { decltype = Reg, declname = $1, decl_width = $3, init = NoExpr } }
-| ID ASSIGN expr { { decltype = Reg, declname = $1, decl_width = 1, init = $3 } }
-| ID LBRACKET DECLIT RBRACKET ASSIGN expr { { decltype = Reg, declname = $1, decl_width = $3, init = $6 } }
+  ID { { decltype = Reg; declname = $1; declwidth = 1; init = Noexpr } }
+| ID LBRACKET DECLIT RBRACKET { { decltype = Reg; declname = $1; declwidth = $3; init = Noexpr } }
+| ID ASSIGN expr { { decltype = Reg; declname = $1; declwidth = 1; init = $3 } }
+| ID LBRACKET DECLIT RBRACKET ASSIGN expr { { decltype = Reg; declname = $1; declwidth = $3; init = $6 } }
 
 stmt_list:
 		/* nothing */ { [] }
@@ -170,7 +170,7 @@ expr:
 	| NOR expr %prec NOT {Reduct(Nor, $2) }
 	| XNOR expr %prec NOT {Reduct(Xnor, $2) }
 	| RESET { Reset }
-	| LBRACE concat_list RBRACE { Concat(List.rev $2) } /* Concatenation */
+	| CONCAT LPAREN concat_list RPAREN { Concat(List.rev $3) } /* Concatenation */
 	| ID LPAREN binding_list SEMICOLON binding_list RPAREN { Inst($1, List.rev $3, List.rev $5) } /*Module instantiation */
 
 expr_opt:

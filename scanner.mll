@@ -41,6 +41,7 @@ rule token = parse
 	| '='  { ASSIGN }
 	| "case"      { CASE }  (*Keywords*)
 	| "clock"     { CLOCK }
+	| "concat"    { CONCAT }
 	| "else"      { ELSE }
 	| "for"       { FOR }
 	| "if"        { IF }
