@@ -2,8 +2,8 @@
 
 %token SEMICOLON LPAREN RPAREN LBRACE RBRACE COMMA COLON LBRACKET RBRACKET EOF
 %token CASE CLOCK ELSE FOR IF INPUT MODULE NEGEDGE OUTPUT PARAMETER POSEDGE REG RESET RETURN WIRE
-%token ASSIGN NOT OR XOR AND NOR XNOR NAND EQ NE GT GE LT LE LSHIFT RSHIFT PLUS MINUS MULTIPLY DIVIDE MODULUS SIGEXT INCREMENT DECREMENT
-%token POSTFIXINC NOELSE
+%token ASSIGN NOT OR XOR AND NOR XNOR NAND EQ NE GT GE LT LE LSHIFT RSHIFT PLUS MINUS MULTIPLY DIVIDE MODULUS SIGEXT
+%token NOELSE
 %token <string> ID
 %token <int> LIT
 %token <int> DECLIT
@@ -21,30 +21,32 @@
 %left LSHIFT RSHIFT
 %left PLUS MINUS
 %left MULTIPLY DIVIDE MODULUS 
-%right SIGEXT NOT INCREMENT DECREMENT
-%left POSTFIXINC
+%right SIGEXT NOT
 
-%start sourcecode
-%type <Ast.sourcecode> sourcecode 
+%start program
+%type <Ast.program> program 
 
 %%
 
-sourcecode:
+program:
 			{[]}
-	| sourcecode moddecl { $2 :: $1 } 		
+	| program moddecl { $2 :: $1 } 		
 
 moddecl:
 	MODULE ID LPAREN INPUT formals_opt SEMICOLON OUTPUT formals_opt RPAREN LBRACE parameter_list decl_list stmt_list RBRACE {{
 		modname = $2;
 		inputs = $5;
 		outputs = $8;
+		statements = List.rev $13;
+		parameters = $11;
+		declarations = $12;
 		}}
 		
 id_with_width: 
-		ID LBRACKET DECLIT RBRACKET { /*Whatever AST we decide upon*/ }
+		ID LBRACKET DECLIT RBRACKET { { id = $1; width = $3;} }
 
 id_with_width_opt:
-		ID            { /*Whatever AST type we decide upon*/ } 
+		ID            { { id = $1; width = 1; } } 
 	| id_with_width { $1 }
 
 id_with_width_opt_list:
@@ -74,11 +76,31 @@ parameter_initialization:
 
 decl_list:
 		/* nothing */ { [] }
-	| decl_list decl { $2 :: $1 }
+	| decl_list decl { List.rev_append $2 $1 }
 
 decl:
-    WIRE id_with_width_opt_list SEMICOLON { /* ... */ }
-	| REG id_with_width_opt_list SEMICOLON { /* ... */ }
+  WIRE wire_decl_with_opt_init_list SEMICOLON { $2 }
+| REG reg_decl_with_opt_init_list SEMICOLON { $2 }
+
+wire_decl_with_opt_init_list:
+  wire_decl_with_opt_init { [$1] }
+| wire_decl_with_opt_init_list COMMA wire_decl_with_opt_init { $3 :: $1 }
+
+wire_decl_with_opt_init:
+  ID { { decltype = Wire, declname = $1, decl_width = 1, init = NoExpr } }
+| ID LBRACKET DECLIT RBRACKET { { decltype = Wire, declname = $1, decl_width = $3, init = NoExpr } }
+| ID ASSIGN expr { { decltype = Wire, declname = $1, decl_width = 1, init = $3 } }
+| ID LBRACKET DECLIT RBRACKET ASSIGN expr { { decltype = Wire, declname = $1, decl_width = $3, init = $6 } }
+
+reg_decl_with_opt_init_list:
+  reg_decl_with_opt_init { [$1] }
+| reg_decl_with_opt_init_list COMMA reg_decl_with_opt_init { $3 :: $1 }
+
+reg_decl_with_opt_init:
+  ID { { decltype = Reg, declname = $1, decl_width = 1, init = NoExpr } }
+| ID LBRACKET DECLIT RBRACKET { { decltype = Reg, declname = $1, decl_width = $3, init = NoExpr } }
+| ID ASSIGN expr { { decltype = Reg, declname = $1, decl_width = 1, init = $3 } }
+| ID LBRACKET DECLIT RBRACKET ASSIGN expr { { decltype = Reg, declname = $1, decl_width = $3, init = $6 } }
 
 stmt_list:
 		/* nothing */ { [] }
@@ -94,13 +116,15 @@ stmt:
 	| FOR LPAREN expr_opt SEMICOLON expr_opt SEMICOLON expr_opt RPAREN stmt { }
 	| SEMICOLON { } /* empty statements */
 
-lvalues:
+lvalue:
 		ID { }
 	| ID LBRACKET expr RBRACKET { }
 	| ID LBRACKET expr COLON expr RBRACKET { }
 
 expr:
-		LIT { }
+		LIT { Literal($1) }
+	| DECLIT { }
+	| lvalue { }
 	| lvalue ASSIGN expr { } 
 	| expr PLUS expr { }
 	| expr MINUS expr { }
@@ -120,20 +144,14 @@ expr:
 	| expr NAND expr { }
 	| expr NOR expr { }
 	| expr XNOR expr { }
-	| expr LSHIFT DECLIT { }
-	| expr RSHIFT DECLIT { }
+	| expr LSHIFT expr { }
+	| expr RSHIFT expr { }
 	| AND expr %prec NOT { } /* reductions */
 	| OR expr %prec NOT { }
 	| XOR expr %prec NOT { }
 	| NAND expr %prec NOT { }
 	| NOR expr %prec NOT { }
 	| XNOR expr %prec NOT { }
-	| INCREMENT ID { }
-	| DECREMENT ID { }
-	| ID INCREMENT %prec POSTFIXINC { }
-	| ID DECREMENT %prec POSTFIXINC { }
-	| POSEDGE { }
-	| NEGEDGE { }
 	| RESET { }
 	| LBRACE concat_list RBRACE { } /* Concatenation */
 	| ID LPAREN binding_list SEMICOLON binding_list RPAREN { } /*Module instantiation */

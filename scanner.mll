@@ -17,9 +17,7 @@ rule token = parse
 	| ['0' '1' 'x']+ 'b' as var { XLIT(String.sub var 0 (String.length var - 1)) } 
 	| ['0' '1']+ 'b' as var { LIT ( (* something *) ) }
 	| ['0' - '9']+ as var { DECLIT( int_of_string var ) }
-	| "++" { INCREMENT } (* Operators *) 
-	| "--" { DECREMENT } 
-	| '+'  { PLUS }  
+	| '+'  { PLUS }  (* Operators *) 
 	| '-'  { MINUS }
 	| '*'  { MULTIPLY }
 	| '/'  { DIVIDE }
