@@ -51,10 +51,10 @@ type id_with_width = {
 	width : int;
 }
 
-type moddecl= {
+type mod_decl= {
 	modname : string; (* Name of the module *)
-	inputs : string list;
-	outputs : string list;
+	inputs : id_with_width list;
+	outputs : id_with_width list;
 	statements : statement list;
 	parameters : parameter list;
 	declarations: declaration list;

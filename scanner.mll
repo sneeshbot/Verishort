@@ -3,15 +3,15 @@
 rule token = parse 
 	[' ' '\t' '\r' '\n'] 	{ token lexbuf }	 			(*Whitespace*)
 	| "/*"     { comment lexbuf }           (* Comments *)
-    | "//"     { comment2 lexbuf }
+  | "//"     { comment2 lexbuf }
 	| '(' { LPAREN }	
-    | ')' { RPAREN }				(*Punctuation*)
+  | ')' { RPAREN }				(*Punctuation*)
 	| '{' { LBRACE }	
-    | '}' { RBRACE }
+  | '}' { RBRACE }
 	| '[' { LBRACKET }
 	| ']' { RBRACKET }
 	| ';' { SEMICOLON } 
-    | ',' { COMMA }
+  | ',' { COMMA }
 	| ':' { COLON }
 	| ['0' - '9']+ 'd' as var { DLIT( int_of_string (String.sub var 0 (String.length var - 1) ) ) } (* Literals *)
 	| ['0' '1']+ 'b' as var { BLIT (String.sub var 0 (String.length var - 1) )  }
@@ -48,7 +48,7 @@ rule token = parse
 	| "input"     { INPUT }
 	| "module"    { MODULE }
 	| "negedge"	  { NEGEDGE }							
-    | "output"    { OUTPUT }
+  | "output"    { OUTPUT }
 	| "parameter" { PARAMETER }
 	| "posedge"   { POSEDGE }
 	| "register"  { REG }

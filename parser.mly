@@ -34,24 +34,29 @@ program:
 	| program moddecl { $2 :: $1 } 		
 
 moddecl:
-	MODULE ID LPAREN INPUT formals_opt SEMICOLON OUTPUT formals_opt RPAREN LBRACE parameter_list decl_list stmt_list RBRACE {{
+	MODULE ID LPAREN input_output RPAREN LBRACE parameter_list decl_list stmt_list RBRACE {{
 		modname = $2;
-		inputs = $5;
-		outputs = $8;
-		statements = List.rev $13;
-		parameters = $11;
-		declarations = $12;
+		inputs = fst $4;
+		outputs = snd $4;
+		statements = List.rev $9;
+		parameters = $7;
+		declarations = $8;
 		returnwidth = 0;
 		}}
-   | MODULE ID LBRACKET DECLIT RBRACKET LPAREN INPUT formals_opt SEMICOLON OUTPUT formals_opt RPAREN LBRACE parameter_list decl_list stmt_list RBRACE {{
+ | MODULE ID LBRACKET DECLIT RBRACKET LPAREN input_output RPAREN LBRACE parameter_list decl_list stmt_list RBRACE {{
 		modname = $2;
-		inputs = $8;
-		outputs = $11;
-		statements = List.rev $16;
-		parameters = $14;
-		declarations = $15;
+		inputs = fst $7;
+		outputs = snd $7;
+		statements = List.rev $12;
+		parameters = $10;
+		declarations = $11;
 		returnwidth = $4;
 		}}
+
+input_output:
+			INPUT formals_opt  { $2, [] }
+		| OUTPUT formals_opt { [], $2 }
+		| INPUT formals_opt SEMICOLON OUTPUT formals_opt { $2, $5 }
 		
 id_with_width: 
 		ID LBRACKET DECLIT RBRACKET { { id = $1; width = $3;} }
@@ -87,28 +92,28 @@ decl_list:
 	| decl_list decl { List.rev_append $2 $1 }
 
 decl:
-  WIRE wire_decl_with_opt_init_list SEMICOLON { $2 }
-| REG reg_decl_with_opt_init_list SEMICOLON { $2 }
+  	WIRE wire_decl_with_opt_init_list SEMICOLON { $2 }
+	| REG reg_decl_with_opt_init_list SEMICOLON { $2 }
 
 wire_decl_with_opt_init_list:
-  wire_decl_with_opt_init { [$1] }
-| wire_decl_with_opt_init_list COMMA wire_decl_with_opt_init { $3 :: $1 }
+  	wire_decl_with_opt_init { [$1] }
+	| wire_decl_with_opt_init_list COMMA wire_decl_with_opt_init { $3 :: $1 }
 
 wire_decl_with_opt_init:
-  ID { { decltype = Wire; declname = $1; declwidth = 1; init = Noexpr } }
-| ID LBRACKET DECLIT RBRACKET { { decltype = Wire; declname = $1; declwidth = $3; init = Noexpr } }
-| ID ASSIGN expr { { decltype = Wire; declname = $1; declwidth = 1; init = $3 } }
-| ID LBRACKET DECLIT RBRACKET ASSIGN expr { { decltype = Wire; declname = $1; declwidth = $3; init = $6 } }
+  	ID { { decltype = Wire; declname = $1; declwidth = 1; init = Noexpr } }
+	| ID LBRACKET DECLIT RBRACKET { { decltype = Wire; declname = $1; declwidth = $3; init = Noexpr } }
+	| ID ASSIGN expr { { decltype = Wire; declname = $1; declwidth = 1; init = $3 } }
+	| ID LBRACKET DECLIT RBRACKET ASSIGN expr { { decltype = Wire; declname = $1; declwidth = $3; init = $6 } }
 
 reg_decl_with_opt_init_list:
-  reg_decl_with_opt_init { [$1] }
-| reg_decl_with_opt_init_list COMMA reg_decl_with_opt_init { $3 :: $1 }
+  	reg_decl_with_opt_init { [$1] }
+	| reg_decl_with_opt_init_list COMMA reg_decl_with_opt_init { $3 :: $1 }
 
 reg_decl_with_opt_init:
-  ID { { decltype = Reg; declname = $1; declwidth = 1; init = Noexpr } }
-| ID LBRACKET DECLIT RBRACKET { { decltype = Reg; declname = $1; declwidth = $3; init = Noexpr } }
-| ID ASSIGN expr { { decltype = Reg; declname = $1; declwidth = 1; init = $3 } }
-| ID LBRACKET DECLIT RBRACKET ASSIGN expr { { decltype = Reg; declname = $1; declwidth = $3; init = $6 } }
+  	ID { { decltype = Reg; declname = $1; declwidth = 1; init = Noexpr } }
+	| ID LBRACKET DECLIT RBRACKET { { decltype = Reg; declname = $1; declwidth = $3; init = Noexpr } }
+	| ID ASSIGN expr { { decltype = Reg; declname = $1; declwidth = 1; init = $3 } }
+	| ID LBRACKET DECLIT RBRACKET ASSIGN expr { { decltype = Reg; declname = $1; declwidth = $3; init = $6 } }
 
 stmt_list:
 		/* nothing */ { [] }
@@ -182,7 +187,7 @@ concat_list:
 	| concat_list COMMA concat_item { $3 :: $1 }
 
 concat_item:
-       BLIT { ConcatBLiteral($1) }
+    BLIT { ConcatBLiteral($1) }
 	| lvalue { ConcatLvalue($1) }
 	| DECLIT LBRACE BLIT RBRACE { ConcatDuplBLiteral($1, $3) } /* duplicated blit */
 	| DECLIT LBRACE lvalue RBRACE { ConcatDuplLvalue($1, $3) } /* duplicated lvalue */
