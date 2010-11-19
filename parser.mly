@@ -176,7 +176,7 @@ expr:
 	| XNOR expr %prec NOT {Reduct(Xnor, $2) }
 	| RESET { Reset }
 	| CONCAT LPAREN concat_list RPAREN { Concat(List.rev $3) } /* Concatenation */
-	| ID LPAREN binding_list SEMICOLON binding_list RPAREN { Inst($1, List.rev $3, List.rev $5) } /*Module instantiation */
+	| ID LPAREN binding_list_opt SEMICOLON binding_list_opt RPAREN { Inst($1, List.rev $3, List.rev $5) } /*Module instantiation */
 
 expr_opt:
 		/* nothing */ { Noexpr }
@@ -193,8 +193,12 @@ concat_item:
 	| DECLIT LBRACE lvalue RBRACE { ConcatDuplLvalue($1, $3) } /* duplicated lvalue */
  
 binding_list:
-		/*Nothing */ { [] }
+	binding { [$1] }
 	| binding_list COMMA binding { $3 :: $1 }
+
+binding_list_opt:
+	/*nothing*/ { [] }
+	| binding_list { $1 }
 
 binding:
 		lvalue ASSIGN expr { $1, $3 }		

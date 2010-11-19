@@ -15,13 +15,17 @@ scanner.cmo: scanner.ml
 	ocamlc -c scanner.ml # compile the scanner
 parser.cmo: parser.ml 
 	ocamlc -c parser.ml # compile the parser
-verishort.cmo: verishort.ml
-	ocamlc -c verishort.ml # compile the interpreter
+#verishort.cmo: verishort.ml
+#	ocamlc -c verishort.ml # compile the interpreter
+printer.cmo: printer.ml
+	ocamlc -c printer.ml # compile Tim's printer
 	
 #all
-vsc: parser.cmo scanner.cmo verishort.cmo
-	ocamlc -o vsc parser.cmo scanner.cmo verishort.cmo
-all: vsc
+#vsc: parser.cmo scanner.cmo verishort.cmo 
+#	ocamlc -o vsc parser.cmo scanner.cmo verishort.cmo
+printer: parser.cmo scanner.cmo printer.cmo
+	ocamlc -o printer parser.cmo scanner.cmo printer.cmo
+all: printer
 
 run: vsc
 	./testbench.pl
