@@ -25,12 +25,13 @@ and lvalue =
   | Range of string * expr * expr
 and binding = lvalue * expr
 
+type condition = Posedge | Negedge | Expression of expr
 
 type statement = 
     Nop
   | Expr of expr
   | Block of statement list
-  | If of expr * statement * statement
+  | If of condition * statement * statement
   | Case of lvalue * case_item list
   | Return of expr
   | For of expr * expr * expr * statement

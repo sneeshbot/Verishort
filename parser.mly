@@ -123,11 +123,16 @@ stmt:
 		expr SEMICOLON { Expr($1) }
 	| RETURN expr SEMICOLON { Return($2) }
 	| LBRACE stmt_list RBRACE { Block(List.rev $2) }
-	| IF LPAREN expr RPAREN stmt %prec NOELSE { If($3, $5, Nop) }
-	| IF LPAREN expr RPAREN stmt ELSE stmt { If($3, $5, $7) }
+	| IF LPAREN condition RPAREN stmt %prec NOELSE { If($3, $5, Nop) }
+	| IF LPAREN condition RPAREN stmt ELSE stmt { If($3, $5, $7) }
 	| CASE LPAREN lvalue RPAREN LBRACE case_list RBRACE { Case($3, List.rev $6) }
 	| FOR LPAREN expr_opt SEMICOLON expr_opt SEMICOLON expr_opt RPAREN stmt { For($3, $5, $7, $9) }
 	| SEMICOLON { Nop } /* empty statements */
+
+condition:
+		POSEDGE { Posedge }
+	| NEGEDGE { Negedge }
+	| expr { Expression($1) }
 
 case_list:
 		case_item { [$1] }

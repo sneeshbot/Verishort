@@ -52,18 +52,23 @@ and print_concat = function
 	| ConcatDuplBLiteral(n, x) -> print_int n; print_string ("{" ^ x ^ "b}")
 	| ConcatDuplLvalue(n, x) -> print_int n; print_string "{"; print_lvalue x; print_string "}"
 
+let print_condition = function
+	  Posedge -> print_string "posedge"
+	| Negedge -> print_string "negedge"
+	| Expression(exp) -> print_expression exp
+
 let rec print_statement = function
 		Nop -> print_endline "Statement: Nop"
 	| Expr(exp) -> print_endline "Statement: Expr: "; print_expression exp; print_newline (); print_endline "End expression statement"
 	| Block(ls) -> print_endline "Statement: Block:"; List.iter print_statement ls; print_endline "End block statement"
 	| Return(exp) -> print_endline "Statement: Return: "; print_expression exp; print_newline (); print_endline "End return statement"
-	| If(pred, tru, fal) -> print_endline "Statement: If: "; print_expression pred;
+	| If(pred, tru, fal) -> print_endline "Statement: If: "; print_condition pred;
 			 print_newline (); print_endline "Then: "; print_statement tru; print_endline "Else:"; print_statement fal; print_endline "End if statement"
 	| Case(var, lst) -> print_string "Statement: Case: "; print_lvalue var; print_newline (); print_case_list lst; print_endline "End case statement"
 	| For(exp1, exp2, exp3, stmt) -> print_endline "Statement: For: "; print_expression exp1; print_string "; "; 
 				print_expression exp2; print_string "; "; print_expression exp3; print_newline ();
 				print_statement stmt; print_endline "End for statement" 
-and print_case (b, stmt) = print_string (b^"b"); print_statement stmt
+and print_case (b, stmt) = print_string (b^"b: "); print_statement stmt
 and print_case_list list = List.iter print_case list
 
 let print_decltype = function
@@ -86,5 +91,5 @@ let print_module l =
 let _ =
   let lexbuf = Lexing.from_channel stdin in
   let sourcecode = Parser.program Scanner.token lexbuf in
-  List.iter print_module sourcecode
+  List.iter print_module (List.rev sourcecode)
 		
