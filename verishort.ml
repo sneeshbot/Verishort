@@ -10,6 +10,10 @@ let _ =
   let print_output s = 
 		print_string "output "; print_string s; print_endline ";" in
   let print_module mdecl = 
-		print_string "module "; print_string mdecl.modname; print_string "("; List.iter print_param mdecl.inputs; List.iter print_param mdecl.outputs; print_endline "vs$return);"; List.iter print_input mdecl.inputs; List.iter print_output mdecl.outputs; print_endline "output vs$return;"; print_endline "endmodule" in
+		print_string "module "; print_string mdecl.modname; print_string "("; 
+List.iter print_param mdecl.inputs; 
+List.iter print_param mdecl.outputs; print_endline "vs$return);"; 
+List.iter print_input mdecl.inputs; 
+List.iter print_output mdecl.outputs; print_endline "output vs$return;"; print_endline "endmodule" in
   List.iter print_module sourcecode
 		

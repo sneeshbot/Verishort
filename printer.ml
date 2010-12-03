@@ -81,8 +81,8 @@ let print_decl x =
 	print_endline ";" 
 let print_module l = 
 	print_endline ("module " ^ l.modname ^ "[" ^ (string_of_int l.returnwidth) ^ "]");
-	print_endline "Inputs: "; List.iter (fun a -> (print_string (a.id ^ "["); print_int a.width; print_endline "]")) l.inputs;
-	print_endline "Outputs: "; List.iter (fun a -> (print_string (a.id ^ "["); print_int a.width; print_endline "]")) l.outputs;
+	print_endline "Inputs: "; List.iter (fun (id, width) -> (print_string (id^ "["); print_int width; print_endline "]")) l.inputs;
+	print_endline "Outputs: "; List.iter (fun (id,width) -> (print_string (id ^ "["); print_int width; print_endline "]")) l.outputs;
 	print_endline "Parameters: "; List.iter (fun (a, b)  -> print_string (a ^ "="); print_endline (string_of_int b)) l.parameters;
 	print_endline "Declarations:"; List.iter print_decl l.declarations;
 	print_endline "Statements:"; List.iter print_statement l.statements;

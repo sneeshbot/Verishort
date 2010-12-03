@@ -47,10 +47,8 @@ type declaration = {
 	init : expr;
 }
 
-type id_with_width = {
-	id : string;
-	width : int;
-}
+type id_with_width = string * int
+
 
 type mod_decl= {
 	modname : string; (* Name of the module *)

@@ -59,10 +59,10 @@ input_output:
 		| INPUT formals_opt SEMICOLON OUTPUT formals_opt { $2, $5 }
 		
 id_with_width: 
-		ID LBRACKET DECLIT RBRACKET { { id = $1; width = $3;} }
+		ID LBRACKET DECLIT RBRACKET { $1, $3 }
 
 id_with_width_opt:
-		ID            { { id = $1; width = 1; } } 
+		ID            { $1, 1 } 
 	| id_with_width { $1 }
 
 id_with_width_opt_list:
