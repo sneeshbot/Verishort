@@ -33,6 +33,7 @@
 program:
 	  /* nothing */	  {[]}
 	| program moddecl { $2 :: $1 } 		
+	| error { raise (Parse_Failure("General error.  You're screwed." , Parsing.symbol_start_pos () )) }
 
 moddecl:
 	MODULE ID LPAREN input_output RPAREN LBRACE parameter_list decl_list stmt_list RBRACE {{
@@ -75,16 +76,19 @@ formals_opt:
     /* nothing */ { [] }
   | id_with_width_opt_list   { List.rev $1 }
 
+
 parameter_list:
 		/* nothing */ { [] }
 	| parameter_list parameter_decl { List.rev_append $2 $1 }
 
 parameter_decl:
 		PARAMETER parameter_initialization_list SEMICOLON { $2 }
+	| error { raise (Parse_Failure("Parameter declaration error." , Parsing.symbol_start_pos () )) }
 
 parameter_initialization_list:
 		parameter_initialization { [$1] }
 	| parameter_initialization_list COMMA parameter_initialization { $3 :: $1 }
+	| error { raise (Parse_Failure("Parameter initialization error." , Parsing.symbol_start_pos () )) }
 
 parameter_initialization:
 		ID ASSIGN DECLIT { $1, $3 }
@@ -100,6 +104,7 @@ decl:
 wire_decl_with_opt_init_list:
   	wire_decl_with_opt_init { [$1] }
 	| wire_decl_with_opt_init_list COMMA wire_decl_with_opt_init { $3 :: $1 }
+	| error { raise (Parse_Failure("Wire declaration error." , Parsing.symbol_start_pos () )) }
 
 wire_decl_with_opt_init:
   	ID { { decltype = Wire; declname = $1; declwidth = 1; init = Noexpr } }
@@ -110,6 +115,7 @@ wire_decl_with_opt_init:
 reg_decl_with_opt_init_list:
   	reg_decl_with_opt_init { [$1] }
 	| reg_decl_with_opt_init_list COMMA reg_decl_with_opt_init { $3 :: $1 }
+	| error { raise (Parse_Failure("Register declaration error." , Parsing.symbol_start_pos () )) }
 
 reg_decl_with_opt_init:
   	ID { { decltype = Reg; declname = $1; declwidth = 1; init = Noexpr } }
@@ -139,6 +145,7 @@ condition:
 case_list:
 		case_item { [$1] }
 	| case_list case_item { $2 :: $1 }
+	| error { raise (Parse_Failure("Case statement error." , Parsing.symbol_start_pos () )) }
 
 case_item: 
 		BLIT COLON stmt { $1, $3 }
@@ -192,6 +199,7 @@ expr_opt:
 concat_list:
 		concat_item { [$1] }
 	| concat_list COMMA concat_item { $3 :: $1 }
+	| error { raise (Parse_Failure("Concatenation error." , Parsing.symbol_start_pos () )) }
 
 concat_item:
     BLIT { ConcatBLiteral($1) }
@@ -202,6 +210,7 @@ concat_item:
 binding_list:
 	binding { [$1] }
 	| binding_list COMMA binding { $3 :: $1 }
+	| error { raise (Parse_Failure("Port binding error." , Parsing.symbol_start_pos () )) }
 
 binding_list_opt:
 	/*nothing*/ { [] }
