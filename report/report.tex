@@ -18,6 +18,34 @@
 
 \section{An Introduction to Verishort}
     \subsection{Background}
+    \indent Verilog is a very popular hardware description language (HDL) which is widely utilized by
+    the electronics hardware design industry. First invented and used in the early 80s at
+    Automated Integrated design Systems, Verilog was put into the public domain and
+    standardized by the IEEE in 1995. This initial public version of Verilog became known as 
+    Verilog-95. The language was later expanded in 2001 and 2005 to address deficiencies
+    and add features resulting in Verilog-2001 and Verilog-2005, the most recent version. (A
+    combined hardware description / verification language known as SystemVerilog was 
+    extended from the 2005 standard but goes beyond the scope of this manual.) \\
+    \indent Despite its popularity, Verilog is infamous for its repetitiveness, strange grammar, and 
+    ease of bug insertion. Part of this is a factor of the nature of low-level hardware design. 
+    There is a difference between languages meant to be run using gates and latches rather 
+    than processors and memory. However, we believe that another part of this simply poor 
+    language design and can be improved. \\
+    \indent VeriShort HDL is meant to simplify the Verilog-2005 language to make it easier to read 
+    and write. First, we have reduced repetitiveness in accordance with the DRY (Don’t 
+    repeat yourself) philosophy by simplifying module input/output syntax and instantiation. 
+    Next, we introduced some C-language features such as brackets and array-like bus 
+    descriptions. We substantially simplified synchronous logic by doing away with ‘always’ 
+    syntax and replacing it with simple ‘if’ statements. The list of reserved keywords has been 
+    substantially shortened in order to make VeriShort completely synthesizable and to 
+    remove rarely used features. Finally, we added a standard library of commonly used 
+    electronic components like latches, multiplexers, and decoders to further reduce the 
+    Verilog tedium. \\
+    \indent Because of the wide adoption of Verilog and the existence of many verifiers and 
+    hardware synthesizers specific to the IEEE standards, the initial goal of VeriShort will not 
+    be to exist as a self contained HDL but rather to translate into clean synthesizable Verilog 
+    code. In support of these efforts, a translator has been started and is expected to be 
+    running by the date of December 22nd 2010.
 
     \subsection{Related Work}
         \subsection{Goals of Verishort}
