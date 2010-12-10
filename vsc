@@ -1,6 +1,0 @@
-#!/usr/bin/perl
-
-$old = $ARGV[0];
-$ARGV[0] =~ s/\.vs/\.v/;
-
-`cp $old $ARGV[0]`
