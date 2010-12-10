@@ -1,5 +1,7 @@
 open Ast
 
+(*exception Parse_Failure of string * Lexing.position*)
+
 let op_to_string = function
 	  Plus   -> "+" 
 	| Minus  -> "-"
@@ -89,7 +91,10 @@ let print_module l =
 	print_endline "end module"
 
 let _ =
-  let lexbuf = Lexing.from_channel stdin in
-  let sourcecode = Parser.program Scanner.token lexbuf in
-  List.iter print_module (List.rev sourcecode)
-		
+  let inname = if Array.length Sys.argv > 1 then Sys.argv.(1) else "stdin" in
+  let inchannel = if Array.length Sys.argv > 1 then Pervasives.open_in Sys.argv.(1) else stdin in
+  let lexbuf = Lexing.from_channel inchannel in
+  try 
+	  let sourcecode = Parser.program Scanner.token lexbuf in
+  		List.iter print_module (List.rev sourcecode)
+  with Parse_Failure(msg, pos) -> print_endline (inname ^ ":" ^ (string_of_int pos.Lexing.pos_lnum) ^":" ^ (string_of_int pos.Lexing.pos_cnum) ^": " ^ msg )

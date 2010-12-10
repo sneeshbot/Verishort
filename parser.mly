@@ -1,4 +1,5 @@
-%{ open Ast %}
+%{ open Ast
+%}
 
 %token SEMICOLON LPAREN RPAREN LBRACE RBRACE COMMA COLON LBRACKET RBRACKET EOF
 %token CASE CLOCK CONCAT ELSE FOR IF INPUT MODULE NEGEDGE OUTPUT PARAMETER POSEDGE REG RESET RETURN WIRE
@@ -57,6 +58,7 @@ input_output:
 			INPUT formals_opt  { $2, [] }
 		| OUTPUT formals_opt { [], $2 }
 		| INPUT formals_opt SEMICOLON OUTPUT formals_opt { $2, $5 }
+		| error { raise (Parse_Failure("Module arguments parsing error." , Parsing.symbol_start_pos () )) }
 		
 id_with_width: 
 		ID LBRACKET DECLIT RBRACKET { $1, $3 }
