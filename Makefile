@@ -5,8 +5,8 @@ parser.mli: parser.mly ast.ml
 	ocamlyacc parser.mly # create parser.ml and parser.mli
 
 #mli
-ast.ml: 
-	ocamlc -c ast.mli # compile AST types
+ast.cmo: 
+	ocamlc -c ast.ml # compile AST types
 parser.ml: parser.mli
 	ocamlc -c parser.mli # compile parser types
 
@@ -23,8 +23,8 @@ printer.cmo: printer.ml
 #all
 #vsc: parser.cmo scanner.cmo verishort.cmo 
 #	ocamlc -o vsc parser.cmo scanner.cmo verishort.cmo
-printer: parser.cmo scanner.cmo printer.cmo
-	ocamlc -o printer parser.cmo scanner.cmo printer.cmo
+printer: ast.cmo parser.cmo scanner.cmo printer.cmo
+	ocamlc -o printer ast.cmo parser.cmo scanner.cmo printer.cmo
 all: printer
 
 run: vsc

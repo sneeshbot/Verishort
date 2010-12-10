@@ -61,3 +61,5 @@ type mod_decl= {
 }
 
 type program = mod_decl list
+
+exception Parse_Failure of string * Lexing.position
