@@ -176,7 +176,76 @@
         \textbf{wire} w5[10] = {1,8{0},1};	\slash\slash 1000000001b using concatenation \\\\
         \slash* This does not work and will result in an error because the left hand side and the right hand 
         side are not the same size. *\slash \\
-        \textbf{wire} w6[10] = 10b; 
+        \textbf{wire} w6[10] = 10b; \\\\
+        Note that the number of bits must always be specified for more than one bit. \\\\
+        Subsets of buses can be assigned: \\\\
+        \textbf{wire} w6[5]; \\
+        w6[3:0] = 4d; \\ 
+        w6[4] = 1b; // w6 == 10100b \\\\
+        The two sides of an assignment must have the same number of bits. \\
+        The assignment operator returns the right operand and associates from 
+        right to left, making the following possible:  \\\\
+        \textbf{wire} w7[5], w8[3]; \\
+        w7[2:0] = w[8] = 010b; \\
+    
+        \subsubsection{Binding Ports}
+        Ports are bound to wires when instantiating a module by setting the module’s parameter name 
+        equal to the wire or value to which it should be bound. Like assigning wires, these bindings 
+        can be in whole or in part. The value of a port, or part of a port, that has not been bound 
+        is assumed to be 0. \\\\
+        \textbf{module} m1(input in1[5], in2; \textbf{output} out[5]) \{ ... \} // declared somewhere \\
+        \slash\slash now, inside of a calling module \\
+       \textbf{wire} w7[5]; \\
+        m1(in1[3:0] = w6[4:1], in2 = 1b; out = w7); 
+    
+    \subsection{Expressions \& Operators}
+    The physical logic of VeriShort is described using expressions which are made up of one 
+    or more operators and operands. An operand can be either a single bit or a bus. 
+    All expressions will return a bit or bus that is then be assigned to a wire or output 
+    (see Assignment) or returned in an output. This section will detail operators ordered from the 
+    most basic building blocks to complex operations.
+    
+        \subsubsection{Concatenation, Replication \& Splitting}
+        To place two or more bits or buses together into a single bus, the concatenation syntax is used. \\
+         \textbf{wire} a = 0; \\
+         \textbf{wire} b = 1; \\
+         \textbf{wire} c[2] = 01b; \\
+        //\{a,b,c,01b\} results in 010101b \\
+         \textbf{wire} a1 = 1; \\
+         \textbf{wire} b1[4]; \\
+        b1 = \{4\{a1\}\}; \slash\slash results in 1111b, which is equivalent to \{a1,a1,a1,a1\} \\
+        
+        \subsubsection{Bitwise}
+        Bitwise operators represent the primitive AND, OR, and NOT gates. All other logical are a combination 
+        of these operations. Every bitwise operation with the exception of the NOT gate is a binary operation 
+        in the “operand operation operand” style with both operands being the same size which is also the 
+        size of the return value. A NOT operation will return the same number of bits as its single operand. \\\\
+        Primitive bitwise operators ordered by precedence. \\\\
+        \textbf{wire} a = 01b; \\
+        \textbf{wire} b = 11b; \\\\
+        Bitwise Operations: \\
+        
+        \begin{center}
+        \begin{tabular}{|l|l|l|}
+        \hline
+        Operator&Example&Result\\ \hline
+        NOT		&	!a		&	10b\\ \hline
+        AND		&	a\&b		&	01b\\ \hline
+        OR		&	a$\mid$b	&	11b\\ \hline
+        \end{tabular}
+        \end{center} 
+        Full range of bitwise operators: \\
+         
+        \begin{center} 
+        \begin{tabular}{|l|l|l|l|}
+        \hline
+        Operator&Example&Equvalency&Results\\ \hline
+        NAND		&	a!\&b				&		!a \& !b				&	00b		\\ \hline
+        NOR			&	a!$\mid$b			&		!a $\mid$ !b			&	10b		\\ \hline
+        XOR			&	a\textasciicircum b	&	(!a \& b) $\mid$ (a \& !b)		&			\\ \hline
+        XNOR		&	a!\textasciicircum b 	&	(!a $\mid$ b) \& (a $\mid$ !b) 	& 			\\ \hline
+        \end{tabular}
+        \end{center} 
         
 
 \section{Project Plan}
