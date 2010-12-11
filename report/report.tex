@@ -25,7 +25,7 @@
     standardized by the IEEE in 1995. This initial public version of Verilog became known as 
     Verilog-95. The language was later expanded in 2001 and 2005 to address deficiencies
     and add features resulting in Verilog-2001 and Verilog-2005, the most recent version. (A
-    combined hardware description / verification language known as SystemVerilog was 
+    combined hardware description\slash verification language known as SystemVerilog was 
     extended from the 2005 standard but goes beyond the scope of this manual.) \\
     \indent Despite its popularity, Verilog is infamous for its repetitiveness, strange grammar, and 
     ease of bug insertion. Part of this is a factor of the nature of low-level hardware design. 
@@ -61,7 +61,123 @@
     \subsection{More Examples}
 
 \section{Reference Manual}
-
+    \subsection{Lexical Conventions}
+        \subsubsection{Tokens}
+        There are 5 classes of tokens: identifiers, keywords, numbers, operators, and other separators.
+        Blanks, tabs, and newlines (collectively, whitespace) are ignored, except when they serve
+        to separate tokens.
+        \subsubsection{Comments}
+        The characters \slash* introduce a comment, which is terminated by the characters *\slash. The characters 
+        \slash\slash also introduce a comment, which is terminated by the newline character. Comments do not 
+        nest. Lines marked as comments are discarded by the compiler.
+        \subsubsection{Data Types}
+        The primary data type is the bit, which may store the value 0 or 1. A group of bits comprises a bus. All 
+        multibit binary values are treated as two’s complement numbers.
+        \indent In for-loops (see the corresponding section), the loop variable is assumed to be a simple integer (i.e., 
+        natural number).
+        \subsubsection{Identifiers}
+        An identifier is a sequence of characters that represent a wire, bus, register, parameter, or module. An 
+        identifier may only include alphanumerical characters or the underscore character (\_). The first character 
+        of an identifier may not be a number.
+        \subsubsection{Keywords}
+        The following identifiers are reserved as keywords and may not be used for any other purpose: 
+        In this manual, keywords are bolded.
+        \begin{itemize}
+        \item{\textbf{case}}
+        \item{\textbf{clock}} 
+        \item{\textbf{else}}
+        \item{\textbf{for}}
+        \item{\textbf{if}}
+        \item{\textbf{input}}
+        \item{\textbf{module}}
+        \item{\textbf{negedge}}
+        \item{\textbf{output}}
+        \item{\textbf{parameter}}
+        \item{\textbf{posedge}}
+        \item{\textbf{register}}
+        \item{\textbf{return}}
+        \item{\textbf{reset}}
+        \item{\textbf{wire}}
+        \end{itemize}
+        \subsubsection{Numbers}
+        Numbers can be either binary or integer values and are specified as follows: 
+        \begin{itemize}
+        \item{A sequence of digits, followed by a radix suffix (b for binary, or d for integer)}
+        \item{If there is only a single 0 or 1, no suffix needs to be provided because 0 and 1 are
+        equivalent in integer and binary} 
+        \item{The characters 0 and 1 are valid binary digits.} 
+        \item{The characters 0-9 are valid integer digits.}
+        \item{Extended binary numbers are like normal binary numbers, but may also use the
+        character ‘x’ as a binary digit. They may only be used in case structures.}
+        \end{itemize}
+        \subsubsection{Operators}
+        An operator is a token that specifies an operation on at least one operand. The operand 
+        may be an expression or a constant. \\
+        Bitwise operators:
+        \begin{itemize}
+        \item{!} 
+        \item{\& }
+        \item{ !\& } 
+        \item{$\mid$}
+        \item{ !$\mid$} 
+        \item{\textasciicircum }
+        \item{ !\textasciicircum} 
+        \item{ \textless\textless} 
+        \item{ \textgreater\textgreater}
+        \end{itemize}
+        Comparison operators: 
+        \begin{itemize}
+        \item{ ==}
+        \item{ \textgreater= }
+        \item{ \textless= }
+        \item{\textgreater }
+        \item{\textless}
+        \end{itemize}
+        Arithmetic operators: 
+        \begin{itemize}
+        \item{+}
+        \item{- }
+        \item{* }
+        \item{/ }
+        \item{\%} 
+        \end{itemize}
+        Assignment operator: 
+        \begin{itemize}
+        \item{=}
+        \end{itemize}
+        Sign extension operator: 
+        \begin{itemize}
+        \item{ ' }
+        \end{itemize}
+        \subsubsection{Buses}
+        \indent A bus represents a multibit wire. The number of bits in a bus must be determinable at compile 
+        time. Buses are declared using the syntax data\_type bus\_name[number\_of\_bits]; Where 
+        data\_type is either wire, register or assumed to be input or output by its position in a module 
+        declaration. The number of bits must be a constant. From here, any bit in the bus may be referred 
+        to using the subscript syntax: bus\_name[bit\_index], where bit\_index is a constant or expression 
+        that yields an integer value less than or equal to the size of the bus. \\
+        \indent A range of bits in a bus is represented by using the index of the most significant bit in the 
+        range, followed by the colon character (:), followed by the index of the least significant 
+        bit in the range, as the subscript. E.g. wires 4-8 would be referred to by bus\_name[7:3]. 
+        Reversing this order is invalid.
+        
+    \subsection{Assignment}
+    All assignments in Verishort bind wires and ports to other wires, binary values, or decimal values. 
+    These can be done en masse, such as in buses (multi-bit wires) or one by one.
+    
+        \subsubsection{Assigning Wires}
+        
+        The most basic assignment is of a single wire to a single bit value: \\\\        \textbf{wire} w1 = 0;  \\
+        \textbf{wire} w2 = !w1;     \slash\slash w2 == 1\\\\
+        A bundle of wires can be assigned to a multi-bit value, as long as the number of bits matches 
+        the number of wires in the bundle: \\\\
+        \textbf{wire} w3[5] = 01010b;	\slash\slash assigning a binary value \\
+        \textbf{wire} w4[4] = 10d;		\slash\slash assigning a decimal value \\
+        \textbf{wire} w5[10] = {1,8{0},1};	\slash\slash 1000000001b using concatenation \\\\
+        \slash* This does not work and will result in an error because the left hand side and the right hand 
+        side are not the same size. *\slash \\
+        \textbf{wire} w6[10] = 10b; 
+        
 
 \section{Project Plan}
     \subsection{Team Responsibilities}
