@@ -1,4 +1,4 @@
-\documentclass[letterpaper,12pt]{article}
+\documentclass[letterpaper,11pt]{article}
 \usepackage[letterpaper,margin=1in]{geometry}
 %\setlength{\topmargin}{-.5in}
 %\setlength{\textheight}{9in}
@@ -167,7 +167,8 @@
     
         \subsubsection{Assigning Wires}
         
-        The most basic assignment is of a single wire to a single bit value: \\\\        \textbf{wire} w1 = 0;  \\
+        The most basic assignment is of a single wire to a single bit value: \\\\
+        \textbf{wire} w1 = 0;  \\
         \textbf{wire} w2 = !w1;     \slash\slash w2 == 1\\\\
         A bundle of wires can be assigned to a multi-bit value, as long as the number of bits matches 
         the number of wires in the bundle: \\\\
@@ -239,13 +240,45 @@
         \begin{center} 
         \begin{tabular}{|l|l|l|l|}
         \hline
-        Operator&Example&Equvalency&Results\\ \hline
-        NAND		&	a!\&b				&		!a \& !b				&	00b		\\ \hline
-        NOR			&	a!$\mid$b			&		!a $\mid$ !b			&	10b		\\ \hline
-        XOR			&	a\textasciicircum b	&	(!a \& b) $\mid$ (a \& !b)		&			\\ \hline
-        XNOR		&	a!\textasciicircum b 	&	(!a $\mid$ b) \& (a $\mid$ !b) 	& 			\\ \hline
+        Operator&Example&Equivalency&Results\\ \hline
+        NAND	&	a!\&b				&		!a \& !b				&	00b		\\ \hline
+        NOR		&	a!$\mid$b			&		!a $\mid$ !b			&	10b		\\ \hline
+        XOR		&	a\textasciicircum b	&	(!a \& b) $\mid$ (a \& !b)		&			\\ \hline
+        XNOR	&	a!\textasciicircum b 	&	(!a $\mid$ b) \& (a $\mid$ !b) 	& 			\\ \hline
         \end{tabular}
         \end{center} 
+        
+        \subsubsection{Parenthesis}
+        Parenthesis has the highest precedence. \\
+        1$\mid$(1\&0) \slash\slash1 \\
+        (1$\mid$1)\&0 \slash\slash 0 \\
+        
+        \subsubsection{Reduction}
+        Reduction operators take only a single operand on their right hand side (a bus) and result in a
+        single bit result. \\\\
+        \textbf{wire} a[3] = 010b; \\
+        
+        \begin{center} 
+        \begin{tabular}{|l|l|p{3in}|l|}
+        \hline
+        Operator&Example&Equivalency&result\\ \hline
+        AND		&	a!\&b				&		!a \& !b				&	00b		\\ \hline
+        NAND	&	a!$\mid$b			&		!a $\mid$ !b			&	10b		\\ \hline
+        OR		&	a\textasciicircum b	&	(!a \& b) $\mid$ (a \& !b)		&			\\ \hline
+        NOR		&	a!\textasciicircum b 	&	(!a $\mid$ b) \& (a $\mid$ !b) 	& 			\\ \hline
+        XOR		&	a\textasciicircum b	&	(!a \& b) $\mid$ (a \& !b)		&			\\ \hline
+        XNOR	&	a!\textasciicircum b 	&	(!a $\mid$ b) \& (a $\mid$ !b) 	& 			\\ \hline
+        \end{tabular}
+        \end{center} 
+        
+        
+        
+        
+        
+        
+        
+        
+        
         
 
 \section{Project Plan}
