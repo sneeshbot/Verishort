@@ -1,5 +1,6 @@
 \documentclass[letterpaper,11pt]{article}
 \usepackage[letterpaper,margin=1in]{geometry}
+\usepackage{array}
 %\setlength{\topmargin}{-.5in}
 %\setlength{\textheight}{9in}
 %\setlength{\oddsidemargin}{.125in}
@@ -33,11 +34,11 @@
     than processors and memory. However, we believe that another part of this simply poor 
     language design and can be improved. \\
     \indent VeriShort HDL is meant to simplify the Verilog-2005 language to make it easier to read 
-    and write. First, we have reduced repetitiveness in accordance with the DRY (DonÕt 
+    and write. First, we have reduced repetitiveness in accordance with the DRY (Donâ€™t 
     repeat yourself) philosophy by simplifying module input/output syntax and instantiation. 
     Next, we introduced some C-language features such as brackets and array-like bus 
-    descriptions. We substantially simplified synchronous logic by doing away with ÔalwaysÕ 
-    syntax and replacing it with simple ÔifÕ statements. The list of reserved keywords has been 
+    descriptions. We substantially simplified synchronous logic by doing away with â€˜alwaysâ€™ 
+    syntax and replacing it with simple â€˜ifâ€™ statements. The list of reserved keywords has been 
     substantially shortened in order to make VeriShort completely synthesizable and to 
     remove rarely used features. Finally, we added a standard library of commonly used 
     electronic components like latches, multiplexers, and decoders to further reduce the 
@@ -67,12 +68,12 @@
         Blanks, tabs, and newlines (collectively, whitespace) are ignored, except when they serve
         to separate tokens.
         \subsubsection{Comments}
-        The characters \slash* introduce a comment, which is terminated by the characters *\slash. The characters 
-        \slash\slash also introduce a comment, which is terminated by the newline character. Comments do not 
+        The characters \slash* introduce a comment, which is terminated by the characters *\slash.\\
+        The characters \slash\slash also introduce a comment, which is terminated by the newline character. Comments do not 
         nest. Lines marked as comments are discarded by the compiler.
         \subsubsection{Data Types}
         The primary data type is the bit, which may store the value 0 or 1. A group of bits comprises a bus. All 
-        multibit binary values are treated as twoÕs complement numbers.
+        multibit binary values are treated as twoâ€™s complement numbers.\\
         \indent In for-loops (see the corresponding section), the loop variable is assumed to be a simple integer (i.e., 
         natural number).
         \subsubsection{Identifiers}
@@ -83,21 +84,21 @@
         The following identifiers are reserved as keywords and may not be used for any other purpose: 
         In this manual, keywords are bolded.
         \begin{itemize}
-        \item{\textbf{case}}
-        \item{\textbf{clock}} 
-        \item{\textbf{else}}
-        \item{\textbf{for}}
-        \item{\textbf{if}}
-        \item{\textbf{input}}
-        \item{\textbf{module}}
-        \item{\textbf{negedge}}
-        \item{\textbf{output}}
-        \item{\textbf{parameter}}
-        \item{\textbf{posedge}}
-        \item{\textbf{register}}
-        \item{\textbf{return}}
-        \item{\textbf{reset}}
-        \item{\textbf{wire}}
+        \item{\texttt{case}}
+        \item{\texttt{clock}} 
+        \item{\texttt{else}}
+        \item{\texttt{for}}
+        \item{\texttt{if}}
+        \item{\texttt{input}}
+        \item{\texttt{module}}
+        \item{\texttt{negedge}}
+        \item{\texttt{output}}
+        \item{\texttt{parameter}}
+        \item{\texttt{posedge}}
+        \item{\texttt{register}}
+        \item{\texttt{return}}
+        \item{\texttt{reset}}
+        \item{\texttt{wire}}
         \end{itemize}
         \subsubsection{Numbers}
         Numbers can be either binary or integer values and are specified as follows: 
@@ -108,57 +109,62 @@
         \item{The characters 0 and 1 are valid binary digits.} 
         \item{The characters 0-9 are valid integer digits.}
         \item{Extended binary numbers are like normal binary numbers, but may also use the
-        character ÔxÕ as a binary digit. They may only be used in case structures.}
+        character â€˜xâ€™ as a binary digit. They may only be used in case structures.}
         \end{itemize}
         \subsubsection{Operators}
         An operator is a token that specifies an operation on at least one operand. The operand 
         may be an expression or a constant. \\
         Bitwise operators:
         \begin{itemize}
-        \item{!} 
-        \item{\& }
-        \item{ !\& } 
-        \item{$\mid$}
-        \item{ !$\mid$} 
-        \item{\textasciicircum }
-        \item{ !\textasciicircum} 
-        \item{ \textless\textless} 
-        \item{ \textgreater\textgreater}
+        \item{\texttt{!}} 
+        \item{\texttt{\& }}
+        \item{\texttt{!\& }} 
+        \item{\texttt{$\mid$}}
+        \item{\texttt{!$\mid$}} 
+        \item{\texttt{\textasciicircum }}
+        \item{\texttt{!\textasciicircum}} 
+        \item{\texttt{\textless\textless}} 
+        \item{\texttt{\textgreater\textgreater}}
         \end{itemize}
         Comparison operators: 
         \begin{itemize}
-        \item{ ==}
-        \item{ \textgreater= }
-        \item{ \textless= }
-        \item{\textgreater }
-        \item{\textless}
+        \item{\texttt{==}}
+        \item{\texttt{\textgreater= }}
+        \item{\texttt{\textless= }}
+        \item{\texttt{\textgreater }}
+        \item{\texttt{\textless}}
         \end{itemize}
         Arithmetic operators: 
         \begin{itemize}
-        \item{+}
-        \item{- }
-        \item{* }
-        \item{/ }
-        \item{\%} 
+        \item{\texttt{+}}
+        \item{\texttt{- }}
+        \item{\texttt{* }}
+        \item{\texttt{/ }}
+        \item{\texttt{\%}} 
         \end{itemize}
         Assignment operator: 
         \begin{itemize}
-        \item{=}
+        \item{\texttt{=}}
         \end{itemize}
         Sign extension operator: 
         \begin{itemize}
-        \item{ ' }
+        \item{\texttt{'}}
+        \end{itemize}
+        The following operators are only valid within a for-loop: 
+        \begin{itemize}
+        \item{\texttt{++}}
+        \item{\texttt{--}}
         \end{itemize}
         \subsubsection{Buses}
         \indent A bus represents a multibit wire. The number of bits in a bus must be determinable at compile 
-        time. Buses are declared using the syntax data\_type bus\_name[number\_of\_bits]; Where 
-        data\_type is either wire, register or assumed to be input or output by its position in a module 
+        time. Buses are declared using the syntax \texttt{data\_type bus\_name[number\_of\_bits];} Where 
+        data\_type is either \texttt{wire, register} or assumed to be input or output by its position in a module 
         declaration. The number of bits must be a constant. From here, any bit in the bus may be referred 
-        to using the subscript syntax: bus\_name[bit\_index], where bit\_index is a constant or expression 
+        to using the subscript syntax: \texttt{bus\_name[bit\_index],} where \texttt{bit\_index} is a constant or expression 
         that yields an integer value less than or equal to the size of the bus. \\
         \indent A range of bits in a bus is represented by using the index of the most significant bit in the 
         range, followed by the colon character (:), followed by the index of the least significant 
-        bit in the range, as the subscript. E.g. wires 4-8 would be referred to by bus\_name[7:3]. 
+        bit in the range, as the subscript. E.g. wires 4-8 would be referred to by \texttt{bus\_name[7:3]}. 
         Reversing this order is invalid.
         
     \subsection{Assignment}
@@ -168,36 +174,36 @@
         \subsubsection{Assigning Wires}
         
         The most basic assignment is of a single wire to a single bit value: \\\\
-        \textbf{wire} w1 = 0;  \\
-        \textbf{wire} w2 = !w1;     \slash\slash w2 == 1\\\\
+        \texttt{wire w1 = 0;}  \\
+        \texttt{wire w2 = !w1;     \slash\slash w2 == 1}\\\\
         A bundle of wires can be assigned to a multi-bit value, as long as the number of bits matches 
         the number of wires in the bundle: \\\\
-        \textbf{wire} w3[5] = 01010b;	\slash\slash assigning a binary value \\
-        \textbf{wire} w4[4] = 10d;		\slash\slash assigning a decimal value \\
-        \textbf{wire} w5[10] = {1,8{0},1};	\slash\slash 1000000001b using concatenation \\\\
-        \slash* This does not work and will result in an error because the left hand side and the right hand 
-        side are not the same size. *\slash \\
-        \textbf{wire} w6[10] = 10b; \\\\
+        \texttt{wire w3[5] = 01010b;	\slash\slash assigning a binary value} \\
+        \texttt{wire w4[4] = 10d;       \slash\slash assigning a decimal value} \\
+        \texttt{wire w5[10] = \{1,8\{0\},1\};	\slash\slash 1000000001b using concatenation} \\\\
+        This does not work and will result in an error because the left hand side and the right hand 
+        side are not the same size.\\
+        \texttt{wire w6[10] = 10b;} \\\\
         Note that the number of bits must always be specified for more than one bit. \\\\
         Subsets of buses can be assigned: \\\\
-        \textbf{wire} w6[5]; \\
-        w6[3:0] = 4d; \\ 
-        w6[4] = 1b; // w6 == 10100b \\\\
+        \texttt{wire w6[5];} \\
+        \texttt{w6[3:0] = 4d;} \\ 
+        \texttt{w6[4] = 1b; // w6 == 10100b} \\\\
         The two sides of an assignment must have the same number of bits. \\
         The assignment operator returns the right operand and associates from 
         right to left, making the following possible:  \\\\
-        \textbf{wire} w7[5], w8[3]; \\
-        w7[2:0] = w[8] = 010b; \\
+        \texttt{wire w7[5], w8[3];} \\
+        \texttt{w7[2:0] = w[8] = 010b;} \\
     
         \subsubsection{Binding Ports}
-        Ports are bound to wires when instantiating a module by setting the moduleÕs parameter name 
+        Ports are bound to wires when instantiating a module by setting the moduleâ€™s parameter name 
         equal to the wire or value to which it should be bound. Like assigning wires, these bindings 
         can be in whole or in part. The value of a port, or part of a port, that has not been bound 
         is assumed to be 0. \\\\
-        \textbf{module} m1(input in1[5], in2; \textbf{output} out[5]) \{ ... \} // declared somewhere \\
-        \slash\slash now, inside of a calling module \\
-       \textbf{wire} w7[5]; \\
-        m1(in1[3:0] = w6[4:1], in2 = 1b; out = w7); 
+        \texttt{module m1(input in1[5], in2; output out[5]) \{ ... \} // declared somewhere} \\
+        \texttt{\slash\slash now, inside of a calling module} \\
+        \texttt{wire w7[5];} \\
+        \texttt{m1(in1[3:0] = w6[4:1], in2 = 1b; out = w7);}
     
     \subsection{Expressions \& Operators}
     The physical logic of VeriShort is described using expressions which are made up of one 
@@ -208,26 +214,26 @@
     
         \subsubsection{Concatenation, Replication \& Splitting}
         To place two or more bits or buses together into a single bus, the concatenation syntax is used. \\
-         \textbf{wire} a = 0; \\
-         \textbf{wire} b = 1; \\
-         \textbf{wire} c[2] = 01b; \\
-        //\{a,b,c,01b\} results in 010101b \\
-         \textbf{wire} a1 = 1; \\
-         \textbf{wire} b1[4]; \\
-        b1 = \{4\{a1\}\}; \slash\slash results in 1111b, which is equivalent to \{a1,a1,a1,a1\} \\
+        \texttt{wire a = 0;} \\
+        \texttt{wire b = 1;} \\
+        \texttt{wire c[2] = 01b;} \\
+        \texttt{//\{a,b,c,01b\} results in 010101b} \\
+        \texttt{wire a1 = 1;} \\
+        \texttt{wire b1[4];} \\
+        \texttt{b1 = \{4\{a1\}\}; \slash\slash results in 1111b, which is equivalent to \{a1,a1,a1,a1\}} \\
         
         \subsubsection{Bitwise}
         Bitwise operators represent the primitive AND, OR, and NOT gates. All other logical are a combination 
         of these operations. Every bitwise operation with the exception of the NOT gate is a binary operation 
-        in the Òoperand operation operandÓ style with both operands being the same size which is also the 
+        in the â€œoperand operation operandâ€ style with both operands being the same size which is also the 
         size of the return value. A NOT operation will return the same number of bits as its single operand. \\\\
         Primitive bitwise operators ordered by precedence. \\\\
-        \textbf{wire} a = 01b; \\
-        \textbf{wire} b = 11b; \\\\
+        \texttt{wire a = 01b;} \\
+        \texttt{wire b = 11b;} \\\\
         Bitwise Operations: \\
         
         \begin{center}
-        \begin{tabular}{|l|l|l|}
+        \begin{tabular}{|l|>{\texttt\bgroup}l<{\egroup}|>{\texttt\bgroup}l<{\egroup}|}
         \hline
         Operator&Example&Result\\ \hline
         NOT		&	!a		&	10b\\ \hline
@@ -238,7 +244,7 @@
         Full range of bitwise operators: \\
          
         \begin{center} 
-        \begin{tabular}{|l|l|l|l|}
+        \begin{tabular}{|l|>{\texttt\bgroup}l<{\egroup}|>{\texttt\bgroup}l<{\egroup}|>{\texttt\bgroup}l<{\egroup}|}
         \hline
         Operator&Example&Equivalency&Results\\ \hline
         NAND	&	a!\&b				&		!a \& !b				&	00b		\\ \hline
@@ -250,35 +256,60 @@
         
         \subsubsection{Parenthesis}
         Parenthesis has the highest precedence. \\
-        1$\mid$(1\&0) \slash\slash1 \\
-        (1$\mid$1)\&0 \slash\slash 0 \\
+        \texttt{1$\mid$(1\&0) \slash\slash1} \\
+        \texttt{(1$\mid$1)\&0 \slash\slash 0} \\
         
         \subsubsection{Reduction}
         Reduction operators take only a single operand on their right hand side (a bus) and result in a
         single bit result. \\\\
-        \textbf{wire} a[3] = 010b; \\
+        \texttt{wire a[3] = 010b;} \\
         
         \begin{center} 
-        \begin{tabular}{|l|l|p{3in}|l|}
+        \begin{tabular}{|l|>{\texttt\bgroup}l<{\egroup}|>{\texttt\bgroup}l<{\egroup}|>{\texttt\bgroup}l<{\egroup}|}
         \hline
         Operator&Example&Equivalency&result\\ \hline
-        AND		&	a!\&b				&		!a \& !b				&	00b		\\ \hline
-        NAND	&	a!$\mid$b			&		!a $\mid$ !b			&	10b		\\ \hline
-        OR		&	a\textasciicircum b	&	(!a \& b) $\mid$ (a \& !b)		&			\\ \hline
-        NOR		&	a!\textasciicircum b 	&	(!a $\mid$ b) \& (a $\mid$ !b) 	& 			\\ \hline
-        XOR		&	a\textasciicircum b	&	(!a \& b) $\mid$ (a \& !b)		&			\\ \hline
-        XNOR	&	a!\textasciicircum b 	&	(!a $\mid$ b) \& (a $\mid$ !b) 	& 			\\ \hline
+        AND		&	\&a       	&	example[0] \& example[1] \& example[2]     &	-		\\ \hline
+        NAND		&	!\&a      	&	!example[0] \& !example[1] \& !example[2]  &	0		\\ \hline
+        OR		&	|a       	&	example[0] | example[1] | example[2]       &	1		\\ \hline
+        NOR		&	!|a      	&	!example[0] | !example[1] | !example[2]    & 	1		\\ \hline
+        XOR		&	\textasciicircum example 	&	example[0] \textasciicircum example[1] \textasciicircum example[2]       &	1		\\ \hline
+        XNOR		&	!\textasciicircum example	&	!example[0] \textasciicircum !example[1] \textasciicircum !example[2]    & 	1		\\ \hline
         \end{tabular}
-        \end{center} 
+        \end{center}
         
+        \subsubsection{Arithmetic}
+        Arithmetic operators are shorthand for common equivalent but complex operations. They operate on two bits or buses which do not have to be the same size. They will return a bit or bus. All operations are done in twoâ€™s complement.\\
+        In general, the bus that receives the result must contain enough bits to hold all bits in the result, or the result of the arithmetic operation may be undefined.\\\\
+        \texttt{wire e0[3] = 011b //equivalent to 3d and can be expanded to 0011b}\\
+		\texttt{wire e1[3] = 111b //equivalent to -1d and can be expanded to 1111b}\\
+		\texttt{wire e3[3];}\\
+		\texttt{wire e4[4];}\\
         
+       \begin{center} 
+        \begin{tabular}{|>{\texttt\bgroup}l<{\egroup}|>{\texttt\bgroup}l<{\egroup}|p{2in}|>{\texttt\bgroup}l<{\egroup}|}
+        \hline
+        Operator&Example&Notes&Result\\ \hline
+        Plus          	&	e3=e0+e1; e4=e0+e1	&	If there is overflow and the bus holding the result has insufficient bits, the result of the operation may be incorrect. If the resultant has n bits and the addends fewer, the addends will both be extended to n bits before addition occurs.     	&	e3=010b; e4=0010b \\ \hline
+        Minus         	&	e3=e0-e1; e4=e0-e1	&	Equivalent to \texttt{e0+{!e1[n],e1[n-1:0]}}.                           &	e3 = 100b; e4 = 0100b \\ \hline
+        Multiplication	&	e0*e1              &	Returns a bus that is n+m-1 long                                        &	10101b                \\ \hline
+        Division      	&	e0/e1               &	not implemented                                                         & 	                      \\ \hline
+        Modulus       	&	e0\%e1             	&	Returns a bus that is n long where n is the size of the first operand   &	0b11                  \\ \hline
+\end{tabular}
+\end{center}
         
+        \subsubsection{Shifting}
+Shifting operations will literally shift the entire bus to the left or right and will discard the bits shifted off the end.\\\\
+\texttt{e0 = 0111b; //7d}\\
+\texttt{e1 = 1111b; //-1d}\\
         
-        
-        
-        
-        
-        
+        \begin{center} 
+        \begin{tabular}{|>{\texttt\bgroup}l<{\egroup}|>{\texttt\bgroup}l<{\egroup}|p{2in}|>{\texttt\bgroup}l<{\egroup}|}
+        \hline
+        Operator&Example&Note&Result\\ \hline
+        Left-shift &	e0<<2; e1<<2	&	Left shift will always fill with zeros     	&	1100b //-4d; 1100b	  \\ \hline
+        Right-shift &	e0>>2; e1>>2	&	Right shift will always fill with the most significant bit to preserve sign &	0001b //1d; 1111b //-1d \\ \hline
+\end{tabular}
+\end{center}
         
 
 \section{Project Plan}
