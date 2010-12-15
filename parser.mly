@@ -179,6 +179,7 @@ expr:
 	| expr XOR expr {Binop($1, Xor, $3) }
 	| expr NAND expr {Binop($1, Nand, $3) }
 	| expr NOR expr {Binop($1, Nor, $3) }
+	| NOT expr {Not($2)}
 	| expr XNOR expr { Binop($1, Xnor, $3)}
 	| expr LSHIFT expr {Binop($1, Lshift, $3) }
 	| expr RSHIFT expr { Binop($1, Rshift, $3)}

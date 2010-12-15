@@ -32,6 +32,7 @@ let rec print_expression = function
 	| Binop(x, op, y) -> print_string "("; print_expression x; print_string (op_to_string op); print_expression y; print_string ")"
 	| Signext(x, y) -> print_int x; print_string "'"; print_expression y
 	| Assign(x, y) -> print_lvalue x; print_string ":="; print_expression y
+	| Not(x) -> print_string "!"; print_expression x
 	| Reduct(op, y) -> print_string (op_to_string op); print_expression y 
 	| Concat(x) -> print_string "concat("; print_concats x; print_string ")"
 	| Inst(x, input, output) -> print_string (x^"("); print_bindings input; print_string "; "; print_bindings output; print_string ")"

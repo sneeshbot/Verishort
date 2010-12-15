@@ -10,6 +10,7 @@ type expr =
   | Assign of lvalue * expr
   | Signext of int * expr
   | Reduct of op * expr
+  | Not of expr
   | Concat of concat_item list
   | Inst of string * binding list * binding list
   | Reset
