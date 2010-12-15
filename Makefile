@@ -19,12 +19,14 @@ parser.cmo: parser.ml
 #	ocamlc -c verishort.ml # compile the interpreter
 printer.cmo: printer.ml
 	ocamlc -c printer.ml # compile Tim's printer
+compile.cmo: compile.ml
+	ocamlc -c compile.ml # compile translator
 	
 #all
 #vsc: parser.cmo scanner.cmo verishort.cmo 
 #	ocamlc -o vsc parser.cmo scanner.cmo verishort.cmo
-printer: ast.cmo parser.cmo scanner.cmo printer.cmo
-	ocamlc -o printer ast.cmo parser.cmo scanner.cmo printer.cmo
+printer: ast.cmo parser.cmo scanner.cmo compile.cmo printer.cmo 
+	ocamlc -o printer ast.cmo parser.cmo scanner.cmo compile.cmo printer.cmo 
 all: printer
 
 run: vsc

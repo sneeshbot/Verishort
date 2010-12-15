@@ -1,6 +1,7 @@
-module mod0 (input a; output b) {
-	wire z = a;
+module mod2 (input a; output b) {
+	parameter scott = 0;
+	wire z = !a;
 }
 
-module mod1 (input a; output b) {}
+module mod2 (input c; output d) {}
 

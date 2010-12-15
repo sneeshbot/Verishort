@@ -18,8 +18,12 @@ let string_map_params map mods =
 let string_map_locals map mods = 
   List.fold_left (fun m mod1 -> StringMap.add mod1.modname mod1.declarations m) map mods
 
+let check_modnames lst1 mods = 
+  List.fold_left (fun lst mod1 -> if List.mem mod1.modname lst then raise (Parse_Failure("Duplicate module name." , mod1.modpos)) else mod1.modname :: lst) lst1 mods
 
 let translate modules =
+	
+	let mod_names = check_modnames [] modules in
 	
 	let environment = { arg_map	= string_map_args StringMap.empty modules; 
 

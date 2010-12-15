@@ -1,19 +1,19 @@
 type op = Plus | Minus | Multiply | Divide | Modulus | Eq | Ne | Ge | Gt | Le | Lt | And | Or | Xor | Nand | Nor | Xnor | Lshift | Rshift
 
-type parameter = string * int
+type parameter = string * int * Lexing.position
 
 type expr =
-    DLiteral of int
-  | BLiteral of string
-  | Lvalue of lvalue
-  | Binop of expr * op * expr
-  | Assign of lvalue * expr
-  | Signext of int * expr
-  | Reduct of op * expr
-  | Not of expr
-  | Concat of concat_item list
-  | Inst of string * binding list * binding list
-  | Reset
+    DLiteral of int  * Lexing.position
+  | BLiteral of string  * Lexing.position
+  | Lvalue of lvalue  * Lexing.position
+  | Binop of expr * op * expr * Lexing.position
+  | Assign of lvalue * expr * Lexing.position
+  | Signext of int * expr * Lexing.position
+  | Reduct of op * expr * Lexing.position
+  | Not of expr * Lexing.position
+  | Concat of concat_item list * Lexing.position
+  | Inst of string * binding list * binding list * Lexing.position
+  | Reset of Lexing.position
   | Noexpr
 and concat_item = 
      ConcatBLiteral of string
@@ -29,15 +29,15 @@ and binding = lvalue * expr
 type condition = Posedge | Negedge | Expression of expr
 
 type statement = 
-    Nop
-  | Expr of expr
-  | Block of statement list
-  | If of condition * statement * statement
-  | Case of lvalue * case_item list
-  | Return of expr
-  | For of expr * expr * expr * statement
+    Nop of Lexing.position
+  | Expr of expr * Lexing.position
+  | Block of statement list * Lexing.position
+  | If of condition * statement * statement * Lexing.position
+  | Case of lvalue * case_item list * Lexing.position
+  | Return of expr * Lexing.position
+  | For of expr * expr * expr * statement * Lexing.position
 
-and case_item = string * statement
+and case_item = string * statement * Lexing.position
 
 type decl_type = Wire | Reg
 
@@ -46,9 +46,10 @@ type declaration = {
 	declname : string;
 	declwidth: int;
 	init : expr;
+	declpos : Lexing.position;
 }
 
-type id_with_width = string * int
+type id_with_width = string * int * Lexing.position
 
 
 type mod_decl= {
@@ -59,6 +60,7 @@ type mod_decl= {
 	parameters : parameter list;
 	declarations: declaration list;
 	returnwidth: int;
+	modpos : Lexing.position;
 }
 
 type program = mod_decl list
