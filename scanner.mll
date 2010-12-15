@@ -1,7 +1,21 @@
-{ open Parser }
+{ open Parser 
+
+let incr_linenum lexbuf =
+let pos = lexbuf.Lexing.lex_curr_p in
+lexbuf.Lexing.lex_curr_p <- { pos with
+	Lexing.pos_lnum = pos.Lexing.pos_lnum + 1;
+	Lexing.pos_bol = pos.Lexing.pos_cnum;
+}
+
+
+
+}
+
+
 
 rule token = parse 
-	[' ' '\t' '\r' '\n'] 	{ token lexbuf }	 			(*Whitespace*)
+	[' ' '\t' '\r' ] 	{ token lexbuf }	 			(*Whitespace*)
+	| ['\n']  { incr_linenum lexbuf;token lexbuf }
 	| "/*"     { comment lexbuf }           (* Comments *)
   | "//"     { comment2 lexbuf }
 	| '(' { LPAREN }	
@@ -13,10 +27,9 @@ rule token = parse
 	| ';' { SEMICOLON } 
   | ',' { COMMA }
 	| ':' { COLON }
-	| ['0' - '9']+ 'd' as var { DLIT( int_of_string (String.sub var 0 (String.length var - 1) ) ) } (* Literals *)
+	| ['0' - '9']+  as var { DLIT( int_of_string var )  } (* Literals *)
 	| ['0' '1']+ 'b' as var { BLIT (String.sub var 0 (String.length var - 1) )  }
 	| ['0' '1' 'x']+ 'b' as var { XLIT(String.sub var 0 (String.length var - 1)) } 
-	| ['0' - '9']+ as var { DECLIT( int_of_string var ) }
 	| '+'  { PLUS }  (* Operators *) 
 	| '-'  { MINUS }
 	| '*'  { MULTIPLY }

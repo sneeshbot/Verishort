@@ -7,7 +7,6 @@
 %token NOELSE
 %token <string> ID
 %token <int> DLIT
-%token <int> DECLIT
 %token <string> BLIT
 %token <string> XLIT
 %token EOF
@@ -45,7 +44,7 @@ moddecl:
 		declarations = $8;
 		returnwidth = 0;
 		}}
- | MODULE ID LBRACKET DECLIT RBRACKET LPAREN input_output RPAREN LBRACE parameter_list decl_list stmt_list RBRACE {{
+ | MODULE ID LBRACKET DLIT RBRACKET LPAREN input_output RPAREN LBRACE parameter_list decl_list stmt_list RBRACE {{
 		modname = $2;
 		inputs = fst $7;
 		outputs = snd $7;
@@ -62,7 +61,7 @@ input_output:
 		| error { raise (Parse_Failure("Module arguments parsing error." , Parsing.symbol_start_pos () )) }
 		
 id_with_width: 
-		ID LBRACKET DECLIT RBRACKET { $1, $3 }
+		ID LBRACKET DLIT RBRACKET { $1, $3 }
 
 id_with_width_opt:
 		ID            { $1, 1 } 
@@ -88,10 +87,11 @@ parameter_decl:
 parameter_initialization_list:
 		parameter_initialization { [$1] }
 	| parameter_initialization_list COMMA parameter_initialization { $3 :: $1 }
-	| error { raise (Parse_Failure("Parameter initialization error." , Parsing.symbol_start_pos () )) }
+	
 
 parameter_initialization:
-		ID ASSIGN DECLIT { $1, $3 }
+		ID ASSIGN DLIT { $1, $3 }
+| error { raise (Parse_Failure("Parameter initialization error." , Parsing.symbol_start_pos () )) }
 
 decl_list:
 		/* nothing */ { [] }
@@ -108,9 +108,9 @@ wire_decl_with_opt_init_list:
 
 wire_decl_with_opt_init:
   	ID { { decltype = Wire; declname = $1; declwidth = 1; init = Noexpr } }
-	| ID LBRACKET DECLIT RBRACKET { { decltype = Wire; declname = $1; declwidth = $3; init = Noexpr } }
+	| ID LBRACKET DLIT RBRACKET { { decltype = Wire; declname = $1; declwidth = $3; init = Noexpr } }
 	| ID ASSIGN expr { { decltype = Wire; declname = $1; declwidth = 1; init = $3 } }
-	| ID LBRACKET DECLIT RBRACKET ASSIGN expr { { decltype = Wire; declname = $1; declwidth = $3; init = $6 } }
+	| ID LBRACKET DLIT RBRACKET ASSIGN expr { { decltype = Wire; declname = $1; declwidth = $3; init = $6 } }
 
 reg_decl_with_opt_init_list:
   	reg_decl_with_opt_init { [$1] }
@@ -119,9 +119,9 @@ reg_decl_with_opt_init_list:
 
 reg_decl_with_opt_init:
   	ID { { decltype = Reg; declname = $1; declwidth = 1; init = Noexpr } }
-	| ID LBRACKET DECLIT RBRACKET { { decltype = Reg; declname = $1; declwidth = $3; init = Noexpr } }
+	| ID LBRACKET DLIT RBRACKET { { decltype = Reg; declname = $1; declwidth = $3; init = Noexpr } }
 	| ID ASSIGN expr { { decltype = Reg; declname = $1; declwidth = 1; init = $3 } }
-	| ID LBRACKET DECLIT RBRACKET ASSIGN expr { { decltype = Reg; declname = $1; declwidth = $3; init = $6 } }
+	| ID LBRACKET DLIT RBRACKET ASSIGN expr { { decltype = Reg; declname = $1; declwidth = $3; init = $6 } }
 
 stmt_list:
 		/* nothing */ { [] }
@@ -159,7 +159,6 @@ lvalue:
 expr:
 		DLIT { DLiteral($1) }
 	| BLIT { BLiteral($1) }
-	| DECLIT { DLiteral($1) }
 	| lvalue { Lvalue($1) }
 	| lvalue ASSIGN expr { Assign($1, $3) } 
 	| expr PLUS expr { Binop($1, Plus, $3) }
@@ -167,7 +166,7 @@ expr:
 	| expr MULTIPLY expr { Binop($1, Multiply, $3) }
 	| expr DIVIDE expr {Binop($1, Divide, $3) }
 	| expr MODULUS expr {Binop($1, Modulus, $3)}
-	| DECLIT SIGEXT expr {  Signext($1, $3) }
+	| DLIT SIGEXT expr {  Signext($1, $3) }
 	| expr EQ expr { Binop($1, Eq, $3)}
 	| expr NE expr {Binop($1, Ne, $3) }
 	| expr GE expr {Binop($1, Ge, $3) }
@@ -205,8 +204,8 @@ concat_list:
 concat_item:
     BLIT { ConcatBLiteral($1) }
 	| lvalue { ConcatLvalue($1) }
-	| DECLIT LBRACE BLIT RBRACE { ConcatDuplBLiteral($1, $3) } /* duplicated blit */
-	| DECLIT LBRACE lvalue RBRACE { ConcatDuplLvalue($1, $3) } /* duplicated lvalue */
+	| DLIT LBRACE BLIT RBRACE { ConcatDuplBLiteral($1, $3) } /* duplicated blit */
+	| DLIT LBRACE lvalue RBRACE { ConcatDuplLvalue($1, $3) } /* duplicated lvalue */
  
 binding_list:
 	binding { [$1] }
