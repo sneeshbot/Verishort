@@ -1,5 +1,5 @@
 module mod(a,b,c);
-	input a;
+	input [9:0] a;
 	input b;
 	output c;
 	assign c=a;

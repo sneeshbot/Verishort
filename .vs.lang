@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+
+ Author: Paolo Borelli <pborelli@gnome.org>
+ Copyright (C) 2003-2007 Paolo Borelli
+
+ This library is free software; you can redistribute it and/or
+ modify it under the terms of the GNU Library General Public
+ License as published by the Free Software Foundation; either
+ version 2 of the License, or (at your option) any later version.
+
+ This library is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ Library General Public License for more details.
+
+ You should have received a copy of the GNU Library General Public
+ License along with this library; if not, write to the
+ Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+ Boston, MA 02111-1307, USA.
+
+-->
+<language id="vs" _name="Verishort" version="1.0" _section="Sources">
+  <metadata>
+    <property name="mimetypes">text/x-vs</property>
+    <property name="globs">*.vs</property>
+    <property name="line-comment-start">//</property>
+    <property name="block-comment-start">/*</property>
+    <property name="block-comment-end">*/</property>
+  </metadata>
+
+  <styles>
+    <style id="comment" _name="Comment" map-to="def:comment"/>
+    <style id="error" _name="Error" map-to="def:error"/>
+    <style id="compiler-directive" _name="Compiler Directive" map-to="def:preprocessor"/>
+    <style id="keyword" _name="Keyword" map-to="def:keyword"/>
+    <style id="gate" _name="Gate" map-to="def:keyword"/>
+    <style id="type" _name="Type" map-to="def:type"/>
+    <style id="base-n-integer" _name="Base-N Integer" map-to="def:base-n-integer"/>
+  </styles>
+
+  <definitions>
+
+    <context id="line-comment" style-ref="comment" end-at-line-end="true" class="comment" class-disabled="no-spell-check">
+      <start>//</start>
+      <include>
+        <context ref="def:in-line-comment"/>
+      </include>
+    </context>
+
+    <context id="block-comment" style-ref="comment" class="comment" class-disabled="no-spell-check">
+      <start>/\*</start>
+      <end>\*/</end>
+      <include>
+        <context ref="def:in-comment"/>
+      </include>
+    </context>
+
+    <context id="close-comment-outside-comment" style-ref="error">
+      <match>\*/(?!\*)</match>
+    </context>
+    
+    <context id="keywords" style-ref="keyword">
+
+      <keyword>case</keyword>
+      <keyword>casex</keyword>
+      <keyword>default</keyword>
+      <keyword>else</keyword>
+      <keyword>for</keyword>
+      <keyword>if</keyword>
+      <keyword>module</keyword>
+      <keyword>negedge</keyword>
+      <keyword>posedge</keyword>
+    </context>
+
+    <context id="gates" style-ref="gate">
+      <keyword>and</keyword>
+      <keyword>nand</keyword>
+      <keyword>nor</keyword>
+      <keyword>not</keyword>
+      <keyword>or</keyword>
+      <keyword>xnor</keyword>
+      <keyword>xor</keyword>
+    </context>
+
+    <context id="types" style-ref="type">
+      <keyword>input</keyword>
+      <keyword>output</keyword>
+      <keyword>parameter</keyword>
+      <keyword>register</keyword>
+      <keyword>wire</keyword>
+    </context>
+
+    <context id="binary-number" style-ref="base-n-integer">
+      <match extended="true">
+        (?&lt;![\w\.])
+        [0-1xX]+[bB]
+        (?![\w\.])
+      </match>
+    </context>
+
+    <context id="decimal-number" style-ref="base-n-integer">
+      <match extended="true">
+        (?&lt;![\w\.])
+        [0-9_xXzZ?]+[dD]
+        (?![\w\.])
+      </match>
+    </context>
+
+
+    <context id="vs" class="no-spell-check">
+      <include>
+        <context ref="line-comment"/>
+        <context ref="block-comment"/>
+        <context ref="close-comment-outside-comment"/>
+        <context ref="keywords"/>
+        <context ref="gates"/>
+        <context ref="types"/>
+        <context ref="binary-number"/>
+        <context ref="decimal-number"/>
+      </include>
+    </context>
+
+  </definitions>
+
+</language>
