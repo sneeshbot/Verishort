@@ -80,7 +80,7 @@ formals_opt:
 
 parameter_list:
 		/* nothing */ { [] }
-	| parameter_list parameter_decl { List.rev_append $2 $1 }
+	| parameter_list parameter_decl { $1 @ List.rev $2 }
 
 parameter_decl:
 		PARAMETER parameter_initialization_list SEMICOLON { $2 }
@@ -97,7 +97,7 @@ parameter_initialization:
 
 decl_list:
 		/* nothing */ { [] }
-	| decl_list decl { List.rev_append $2 $1 }
+	| decl_list decl { $1 @ List.rev $2 }
 
 decl:
   	WIRE wire_decl_with_opt_init_list SEMICOLON { $2 }

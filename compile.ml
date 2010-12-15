@@ -3,7 +3,7 @@ open Ast
 module StringMap = Map.Make(String)
 
 (* Symbol table: Information about all the names in scope *)
-type env = {
+type enviro = {
     local_map    : declaration list StringMap.t; (* FP offset for args, locals *)
 	param_map    : parameter list StringMap.t;
 	arg_map     : (id_with_width list * id_with_width list) StringMap.t;
@@ -20,6 +20,33 @@ let string_map_locals map mods =
 
 let check_modnames lst1 mods = 
   List.fold_left (fun lst mod1 -> if List.mem mod1.modname lst then raise (Parse_Failure("Duplicate module name." , mod1.modpos)) else mod1.modname :: lst) lst1 mods
+let check_unique_ids_in_module env mod_name =
+	let inputslist = List.fold_left (fun lst2 (name, width, pos)  -> (* each input *)
+      if List.mem name lst2 
+      then raise (Parse_Failure ("Duplicate identifier.", pos)) 
+      else if width < 1 
+      then raise (Parse_Failure ("Invalid width.", pos))
+      else name :: lst2) [] (fst (StringMap.find mod_name env.arg_map)) 
+    in let argslist = List.fold_left (fun lst2 (name, width, pos)  -> (* each output *)
+      if List.mem name lst2 
+      then raise (Parse_Failure ("Duplicate identifier.", pos)) 
+      else if width < 1 
+      then raise (Parse_Failure ("Invalid width.", pos))
+      else name :: lst2) inputslist (snd (StringMap.find mod_name env.arg_map)) 
+    in let argsandparamslist = List.fold_left (fun lst2 (name, _, pos)  ->
+      if List.mem name lst2 
+      then raise (Parse_Failure ("Duplicate identifier.", pos)) 
+      else name :: lst2) argslist (StringMap.find mod_name env.param_map)  
+    in 
+    List.fold_left (fun lst2 decl  -> (* each decl in each mod *)
+      if List.mem decl.declname lst2 
+      then raise (Parse_Failure ("Duplicate identifier.", decl.declpos)) 
+      else if decl.declwidth < 1 
+      then raise (Parse_Failure ("Invalid width.", decl.declpos))
+      else decl.declname :: lst2) argsandparamslist (StringMap.find mod_name env.local_map) 
+      
+let check_unique_ids env mod_names =
+  List.iter (fun mod_name-> ignore(check_unique_ids_in_module env mod_name) ) mod_names
 
 let translate modules =
 	
@@ -31,7 +58,8 @@ let translate modules =
 
 	local_map = string_map_locals StringMap.empty modules
 	}  in
-	()
+	
+	check_unique_ids environment mod_names
 	
 	
 
