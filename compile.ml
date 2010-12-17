@@ -157,6 +157,8 @@ let check_unique_ids env mod_names =
   List.iter (fun mod_name-> ignore(check_unique_ids_in_module env mod_name) ) mod_names
 
 let translate modules =
+
+	let out_file = Pervasives.open_out("output_file") in
 	
 	let mod_names = check_modnames [] modules in
 	
@@ -167,30 +169,9 @@ let translate modules =
 	local_map = string_map_locals StringMap.empty modules
 	}  in
 	
-	check_unique_ids environment mod_names
+	check_unique_ids environment mod_names;
 	
-	
-
-	 
-	 (*
-	let args_map	= string_map_args StringMap.empty modules in 
-
-	let params_map = string_map_params StringMap.empty modules in 
-
-	let locals_map = string_map_locals StringMap.empty modules in 
-
-	let print_decl_alt x y = List.iter print_func y in
-		
-	let print_ids lst = List.iter (fun (id, width) -> (print_string (id^ "["); print_int width; print_endline "]")) lst in
-	
-	let print_params x lst =  List.iter (fun (a, b)  -> print_string (a ^ "="); print_endline (string_of_int b)) lst in
-	
-	StringMap.iter print_decl_alt locals_map;
-	print_endline "**********";
-	StringMap.iter (fun x (inputs, outputs) -> (print_endline ("Modname: " ^ x); print_endline "Inputs:"; print_ids inputs; print_endline "Outputs:"; print_ids outputs)) args_map;
-	print_endline "**********";
-	ignore (StringMap.iter print_params params_map)
-	*)
+	Pervasives.close_out(out_file)
 
 
 	
