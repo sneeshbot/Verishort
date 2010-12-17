@@ -29,5 +29,8 @@ printer: ast.cmo parser.cmo scanner.cmo compile.cmo printer.cmo
 	ocamlc -o printer ast.cmo parser.cmo scanner.cmo compile.cmo printer.cmo 
 all: printer
 
+clean:
+	rm -f ast.cmi ast.cmo compile.cmi compile.cmo output_file parser.cmi parser.cmo parser.ml parser.mli printer printer.cmi printer.cmo scanner.cmi scanner.cmo scanner.ml
+
 run: vsc
 	./testbench.pl
