@@ -24,7 +24,7 @@ let op_to_string = function
 	| Rshift -> ">>"
 
 let rec print_expression = function
-	  Noexpr -> print_endline "Expression: No expression"
+	  Noexpr(_) -> print_endline "Expression: No expression"
 	| Reset(_) -> print_string "Reset"
 	| DLiteral(x,_)  ->  print_string ((string_of_int x) ^ "d") 
 	| BLiteral(x,_)  -> print_string (x ^ "b")
@@ -33,9 +33,10 @@ let rec print_expression = function
 	| Signext(x, y,_) -> print_int x; print_string "'"; print_expression y
 	| Assign(x, y,_) -> print_lvalue x; print_string ":="; print_expression y
 	| Not(x,_) -> print_string "!"; print_expression x
-	| Reduct(op, y,_) -> print_string (op_to_string op); print_expression y 
+	| Reduct(op, y,_) -> print_string (op_to_string op); print_lvalue y 
 	| Concat(x,_) -> print_string "concat("; print_concats x; print_string ")"
 	| Inst(x, input, output,_) -> print_string (x^"("); print_bindings input; print_string "; "; print_bindings output; print_string ")"
+	
 and print_lvalue = function
 		Identifier(id) -> print_string id
 	| Subscript(id, ind) -> print_string (id ^ "["); print_expression ind; print_string "]"
@@ -80,8 +81,9 @@ let print_decltype = function
 
 let print_decl x =
 	print_decltype x.decltype; print_string (" " ^ x.declname ^ "[");
-	print_int x.declwidth; print_string "]"; (if x.init != Noexpr then (print_string " = "; print_expression x.init));
+	print_int x.declwidth; print_string "]"; print_string " = "; print_expression x.init;
 	print_endline ";" 
+	
 let print_module l = 
 	print_endline ("module " ^ l.modname ^ "[" ^ (string_of_int l.returnwidth) ^ "]");
 	print_endline "Inputs: "; List.iter (fun (id, width,_) -> (print_string (id^ "["); print_int width; print_endline "]")) l.inputs;

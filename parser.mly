@@ -109,8 +109,8 @@ wire_decl_with_opt_init_list:
 	| error { raise (Parse_Failure("Wire declaration error." , Parsing.symbol_start_pos () )) }
 
 wire_decl_with_opt_init:
-  	ID { { decltype = Wire; declname = $1; declwidth = 1; init = Noexpr; declpos = Parsing.symbol_start_pos () } }
-	| ID LBRACKET DLIT RBRACKET { { decltype = Wire; declname = $1; declwidth = $3; init = Noexpr; declpos = Parsing.symbol_start_pos () } }
+  	ID { { decltype = Wire; declname = $1; declwidth = 1; init = Noexpr(Parsing.symbol_start_pos ()); declpos = Parsing.symbol_start_pos () } }
+	| ID LBRACKET DLIT RBRACKET { { decltype = Wire; declname = $1; declwidth = $3; init = Noexpr(Parsing.symbol_start_pos ()); declpos = Parsing.symbol_start_pos () } }
 	| ID ASSIGN expr { { decltype = Wire; declname = $1; declwidth = 1; init = $3; declpos = Parsing.symbol_start_pos () } }
 	| ID LBRACKET DLIT RBRACKET ASSIGN expr { { decltype = Wire; declname = $1; declwidth = $3; init = $6; declpos = Parsing.symbol_start_pos () } }
 
@@ -120,8 +120,8 @@ reg_decl_with_opt_init_list:
 	| error { raise (Parse_Failure("Register declaration error." , Parsing.symbol_start_pos () )) }
 
 reg_decl_with_opt_init:
-  	ID { { decltype = Reg; declname = $1; declwidth = 1; init = Noexpr; declpos = Parsing.symbol_start_pos () } }
-	| ID LBRACKET DLIT RBRACKET { { decltype = Reg; declname = $1; declwidth = $3; init = Noexpr; declpos = Parsing.symbol_start_pos () } }
+  	ID { { decltype = Reg; declname = $1; declwidth = 1; init = Noexpr(Parsing.symbol_start_pos ()); declpos = Parsing.symbol_start_pos () } }
+	| ID LBRACKET DLIT RBRACKET { { decltype = Reg; declname = $1; declwidth = $3; init = Noexpr(Parsing.symbol_start_pos ()); declpos = Parsing.symbol_start_pos () } }
 	| ID ASSIGN expr { { decltype = Reg; declname = $1; declwidth = 1; init = $3; declpos = Parsing.symbol_start_pos () } }
 	| ID LBRACKET DLIT RBRACKET ASSIGN expr { { decltype = Reg; declname = $1; declwidth = $3; init = $6; declpos = Parsing.symbol_start_pos () } }
 
@@ -180,22 +180,22 @@ expr:
 	| expr XOR expr {Binop($1, Xor, $3, Parsing.symbol_start_pos ()) }
 	| expr NAND expr {Binop($1, Nand, $3, Parsing.symbol_start_pos ()) }
 	| expr NOR expr {Binop($1, Nor, $3, Parsing.symbol_start_pos ())}
-	| NOT expr {Not($2, Parsing.symbol_start_pos ())}
 	| expr XNOR expr { Binop($1, Xnor, $3, Parsing.symbol_start_pos ())}
 	| expr LSHIFT expr {Binop($1, Lshift, $3, Parsing.symbol_start_pos ()) }
 	| expr RSHIFT expr { Binop($1, Rshift, $3, Parsing.symbol_start_pos ())}
-	| AND expr %prec NOT {Reduct(And, $2, Parsing.symbol_start_pos ()) } /* reductions */
-	| OR expr %prec NOT {Reduct(Or, $2, Parsing.symbol_start_pos ()) }
-	| XOR expr %prec NOT {Reduct(Xor, $2, Parsing.symbol_start_pos ()) }
-	| NAND expr %prec NOT {Reduct(Nand, $2, Parsing.symbol_start_pos ()) }
-	| NOR expr %prec NOT {Reduct(Nor, $2, Parsing.symbol_start_pos ()) }
-	| XNOR expr %prec NOT {Reduct(Xnor, $2, Parsing.symbol_start_pos ()) }
+	| NOT expr {Not($2, Parsing.symbol_start_pos ())}
+	| AND lvalue %prec NOT {Reduct(And, $2, Parsing.symbol_start_pos ()) } /* reductions */
+	| OR lvalue %prec NOT {Reduct(Or, $2, Parsing.symbol_start_pos ()) }
+	| XOR lvalue %prec NOT {Reduct(Xor, $2, Parsing.symbol_start_pos ()) }
+	| NAND lvalue %prec NOT {Reduct(Nand, $2, Parsing.symbol_start_pos ()) }
+	| NOR lvalue %prec NOT {Reduct(Nor, $2, Parsing.symbol_start_pos ()) }
+	| XNOR lvalue %prec NOT {Reduct(Xnor, $2, Parsing.symbol_start_pos ()) }
 	| RESET { Reset(Parsing.symbol_start_pos ()) }
 	| CONCAT LPAREN concat_list RPAREN { Concat(List.rev $3, Parsing.symbol_start_pos ()) } /* Concatenation */
 	| ID LPAREN binding_list_opt SEMICOLON binding_list_opt RPAREN { Inst($1, List.rev $3, List.rev $5, Parsing.symbol_start_pos ()) } /*Module instantiation */
 
 expr_opt:
-		/* nothing */ { Noexpr }
+		/* nothing */ { Noexpr(Parsing.symbol_start_pos ()) }
 	| expr { $1 }
 
 concat_list:

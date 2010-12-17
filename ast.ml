@@ -9,12 +9,12 @@ type expr =
   | Binop of expr * op * expr * Lexing.position
   | Assign of lvalue * expr * Lexing.position
   | Signext of int * expr * Lexing.position
-  | Reduct of op * expr * Lexing.position
+  | Reduct of op * lvalue * Lexing.position
   | Not of expr * Lexing.position
   | Concat of concat_item list * Lexing.position
   | Inst of string * binding list * binding list * Lexing.position
   | Reset of Lexing.position
-  | Noexpr
+  | Noexpr of Lexing.position
 and concat_item = 
      ConcatBLiteral of string
    | ConcatLvalue of lvalue
