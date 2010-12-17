@@ -21,6 +21,7 @@ foreach $verishortTestFile (@verishorts) {
 	$goal = $verishortTestFile;
 	
 	print "./printer $originalVerishortTestFile\n";
+	print `cat $originalVerishortTestFile\n`;
 	print `./printer $originalVerishortTestFile\n`;
 
 =comment
