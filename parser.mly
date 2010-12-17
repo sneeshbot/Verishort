@@ -37,7 +37,7 @@ program:
 moddecl:
 	MODULE ID LPAREN input_output RPAREN LBRACE parameter_list decl_list stmt_list RBRACE {{
 		modname = $2;
-		inputs = fst $4;
+		inputs = [ ("clock", 1, Lexing.dummy_pos); ("reset", 1, Lexing.dummy_pos)] @ fst $4;
 		outputs = snd $4;
 		statements = List.rev $9;
 		parameters = $7;
@@ -47,7 +47,7 @@ moddecl:
 		}}
  | MODULE ID LBRACKET DLIT RBRACKET LPAREN input_output RPAREN LBRACE parameter_list decl_list stmt_list RBRACE {{
 		modname = $2;
-		inputs = fst $7;
+		inputs = [ ("clock", 1, Lexing.dummy_pos); ("reset", 1, Lexing.dummy_pos)] @ fst $7;
 		outputs = snd $7;
 		statements = List.rev $12;
 		parameters = $10;
@@ -101,7 +101,7 @@ decl_list:
 
 decl:
   	WIRE wire_decl_with_opt_init_list SEMICOLON { $2 }
-	| REG reg_decl_with_opt_init_list SEMICOLON { $2 }
+	| REG reg_decl_list SEMICOLON { $2 }
 
 wire_decl_with_opt_init_list:
   	wire_decl_with_opt_init { [$1] }
@@ -114,16 +114,16 @@ wire_decl_with_opt_init:
 	| ID ASSIGN expr { { decltype = Wire; declname = $1; declwidth = 1; init = $3; declpos = Parsing.symbol_start_pos () } }
 	| ID LBRACKET DLIT RBRACKET ASSIGN expr { { decltype = Wire; declname = $1; declwidth = $3; init = $6; declpos = Parsing.symbol_start_pos () } }
 
-reg_decl_with_opt_init_list:
-  	reg_decl_with_opt_init { [$1] }
-	| reg_decl_with_opt_init_list COMMA reg_decl_with_opt_init { $3 :: $1 }
+reg_decl_list:
+  	reg_decl { [$1] }
+	| reg_decl_list COMMA reg_decl { $3 :: $1 }
 	| error { raise (Parse_Failure("Register declaration error." , Parsing.symbol_start_pos () )) }
 
-reg_decl_with_opt_init:
+reg_decl:
   	ID { { decltype = Reg; declname = $1; declwidth = 1; init = Noexpr(Parsing.symbol_start_pos ()); declpos = Parsing.symbol_start_pos () } }
 	| ID LBRACKET DLIT RBRACKET { { decltype = Reg; declname = $1; declwidth = $3; init = Noexpr(Parsing.symbol_start_pos ()); declpos = Parsing.symbol_start_pos () } }
-	| ID ASSIGN expr { { decltype = Reg; declname = $1; declwidth = 1; init = $3; declpos = Parsing.symbol_start_pos () } }
-	| ID LBRACKET DLIT RBRACKET ASSIGN expr { { decltype = Reg; declname = $1; declwidth = $3; init = $6; declpos = Parsing.symbol_start_pos () } }
+	| ID ASSIGN expr { raise (Parse_Failure("Registers may not be initialized." , Parsing.symbol_start_pos () ))  }
+	| ID LBRACKET DLIT RBRACKET ASSIGN expr { raise (Parse_Failure("Registers may not be initialized." , Parsing.symbol_start_pos () ))  }
 
 stmt_list:
 		/* nothing */ { [] }

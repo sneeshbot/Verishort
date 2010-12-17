@@ -15,7 +15,7 @@ lexbuf.Lexing.lex_curr_p <- { pos with
 
 rule token = parse 
 	[' ' '\t' '\r' ] 	{ token lexbuf }	 			(*Whitespace*)
-	| ['\n']  { incr_linenum lexbuf;token lexbuf }
+	| '\n'  { incr_linenum lexbuf;token lexbuf }
 	| "/*"     { comment lexbuf }           (* Comments *)
   | "//"     { comment2 lexbuf }
 	| '(' { LPAREN }	
@@ -27,7 +27,8 @@ rule token = parse
 	| ';' { SEMICOLON } 
   | ',' { COMMA }
 	| ':' { COLON }
-	| ['0' - '9']+  as var { DLIT( int_of_string var )  } (* Literals *)
+	| '-'['0' - '9']+  as var { DLIT( int_of_string var )  } (* Literals *)
+	| '+'?['0' - '9']+  as var { DLIT( int_of_string var )  } (* Literals *)
 	| ['0' '1']+ 'b' as var { BLIT (String.sub var 0 (String.length var - 1) )  }
 	| ['0' '1' 'x']+ 'b' as var { XLIT(String.sub var 0 (String.length var - 1)) } 
 	| '+'  { PLUS }  (* Operators *) 
@@ -74,8 +75,9 @@ rule token = parse
 
 and comment = parse
   "*/" { token lexbuf }
+| '\n' { incr_linenum lexbuf; comment lexbuf}
 | _    { comment lexbuf }
 
 and comment2 = parse
-  '\n' { token lexbuf }
+  '\n' { incr_linenum lexbuf; token lexbuf }
 | _ {comment2 lexbuf}
