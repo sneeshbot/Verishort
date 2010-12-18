@@ -88,9 +88,9 @@ and add_one x = add_one_actual (String.length x -1) (String.copy x)
 let rec eval_expr mod_name env = function
     DLiteral(x, _) -> Int64.of_int x
   | BLiteral(x, pos) -> (try 
-  						if x.[0] = '0' then Int64.of_string ("0b" ^ x) 
-  						else Int64.neg (Int64.of_string ("0b"^(add_one (invert_binary x))))
-  						with Failure(_) -> raise (Parse_Failure("Binary literals may not exceed 64 bits", pos)))
+              if x.[0] = '0' then Int64.of_string ("0b" ^ x) 
+              else Int64.neg (Int64.of_string ("0b"^(add_one (invert_binary x))))
+              with Failure(_) -> raise (Parse_Failure("Binary literals may not exceed 64 bits", pos)))
   | Lvalue(x, pos) -> (match x with
         Identifier(id) -> (try Int64.of_int(get_param mod_name id env) 
                           with Not_found -> raise (Parse_Failure("Expression cannot be evaluated at compile time.", pos)))
@@ -172,9 +172,9 @@ let check_unique_ids env mod_names =
 let out_file = open_out("output_file")  
 
 let rec get_min_bit_width x = 
-	if Int64.compare Int64.zero x = 0 || Int64.compare Int64.one x = 0 || Int64.compare Int64.minus_one x = 0 then 1
-	else 1 + get_min_bit_width (Int64.div x (Int64.of_int 2))
-	
+  if Int64.compare Int64.zero x = 0 || Int64.compare Int64.one x = 0 || Int64.compare Int64.minus_one x = 0 then 1
+  else 1 + get_min_bit_width (Int64.div x (Int64.of_int 2))
+  
 let print_module env m = 
   (* print module sig *)
   let mod_args = StringMap.find m.modname env.arg_map in
@@ -192,7 +192,68 @@ let print_module env m =
       let value = eval_expr m.modname env x in 
       if get_min_bit_width value > decl.declwidth then raise (Parse_Failure("Overflow in initialization.", decl.declpos)) else output_string out_file ("assign " ^ decl.declname ^ " = " ^ Int64.to_string(value) ^ ";\n"))
   in
+  (*
+  let print_for (init, cond, incr, stmt) =
+    () (* need to handle inner for *)
+  in
+  
+
+  
+  let rec print_expr expr = 
+    Noexpr(_) -> 
+  | Reset(_) -> 
+  | DLiteral(x,_)  ->  
+  | BLiteral(x,_)  -> 
+  | Lvalue(x,_) -> 
+  | Binop(x, op, y,_) -> 
+  | Signext(x, y,_) -> 
+  | Assign(x, y,_) -> 
+  | Not(x,_) -> 
+  | Reduct(op, y,_) -> 
+  | Concat(x,_) -> 
+  | Inst(x, input, output,_) -> 
+  in
+  
+  let print_if_inner = 
+    ()
+  
+  and let print_if_always(cond, stmt1, stmt2)
+    ()
+  
+  
+  and let print_if (cond, stmt1, stmt2) = 
+    output_string out_file ("always @(" ^ (string_if_cond cond) ^ ") begin\n");
+    print_if_cond cond;
+    
+    
+    output_string out_file (
+    
+  and
+  
+  let print_if_cond cond = match cond
+      Posedge -> ()
+    | Negedge -> ()
+    | Expression(expr) -> output_string out_file ("if(" ^ (print_expr expr) ^ ") begin\n")
+  
+  and
+  
+  let string_if_cond cond = match cond
+      Posedge -> "posedge"
+    | Negedge -> "negedge"
+    | Expr(expr) -> "*"
+  and 
+  let rec print_stmt stmt = function
+      Block(stmtlst, _) -> List.iter print_stmt stmtlst
+    | Expr(exp, _) -> print_expr exp
+    | If(cond, stmt1, stmt2, _) -> print_if (cond, stmt1, stmt2)
+    | For(init, cond, incr, stmt, _) -> print_for (init, cond, incr, stmt)
+    | Return(expr, _) -> (* HALP *)
+    | Case(lvalue, items) -> (* MOAR HALP *)
+    | Nop(_) -> (* nothing *)
+  in
+  *)
     List.iter print_decl m.declarations;
+    (*List.iter print_stmt m.statements;*)
   
   output_string out_file "endmodule\n"
   
