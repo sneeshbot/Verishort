@@ -31,5 +31,9 @@ module cas(clock,reset,a,b,c,d);
 				c_reg<=2'b10;
 				end
 			endcase
+		if (reset) begin
+			c_reg <=0;
+			d_reg <=0;
+			end
 		end
 	endmodule

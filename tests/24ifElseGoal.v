@@ -28,6 +28,11 @@ module ifElse(clock,reset,a,b,c);
 			b_reg <= 0;
 			d_reg <= 3;
 			end
+
+		if (reset) begin
+			b_reg <=0;
+			c_reg <=0;
+			end
 		end
 	endmodule
 	

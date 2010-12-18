@@ -25,5 +25,10 @@ module nestedIfElse(clock,reset,a,b);
 		else begin
 			b_reg<=3;
 			end
+
+		if (reset) begin
+			b_reg <=0;
+			d_reg <=0;
+			end
 		end
 	endmodule 
