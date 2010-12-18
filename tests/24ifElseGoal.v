@@ -15,18 +15,18 @@ module ifElse(clock,reset,a,b,c);
 	
 	always @ (*) begin
 		if (a) begin
-			b_reg = 1;
+			b_reg <= 1;
 			end
 		else if (a>1) begin
-			b_reg = 0;
-			c_reg = 1;
+			b_reg <= 0;
+			c_reg <= 1;
 			end
 		else if (0) begin
-			b_reg = 1;
+			b_reg <= 1;
 			end
 		else begin
-			b_reg = 0;
-			d_reg = 3;
+			b_reg <= 0;
+			d_reg <= 3;
 			end
 		end
 	endmodule
