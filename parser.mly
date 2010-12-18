@@ -204,10 +204,10 @@ concat_list:
 	| error { raise (Parse_Failure("Concatenation error." , Parsing.symbol_start_pos () )) }
 
 concat_item:
-    BLIT { ConcatBLiteral($1) }
-	| lvalue { ConcatLvalue($1) }
-	| DLIT LBRACE BLIT RBRACE { ConcatDuplBLiteral($1, $3) } /* duplicated blit */
-	| DLIT LBRACE lvalue RBRACE { ConcatDuplLvalue($1, $3) } /* duplicated lvalue */
+    BLIT { ConcatBLiteral(1, $1) }
+	| lvalue { ConcatLvalue(1, $1) }
+	| DLIT LBRACE BLIT RBRACE { ConcatBLiteral($1, $3) } /* duplicated blit */
+	| DLIT LBRACE lvalue RBRACE { ConcatLvalue($1, $3) } /* duplicated lvalue */
  
 binding_list:
 	binding { [$1] }

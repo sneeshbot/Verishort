@@ -16,10 +16,8 @@ type expr =
   | Reset of Lexing.position
   | Noexpr of Lexing.position
 and concat_item = 
-     ConcatBLiteral of string
-   | ConcatLvalue of lvalue
-   | ConcatDuplBLiteral of int * string
-   | ConcatDuplLvalue of int * lvalue
+   | ConcatBLiteral of int * string
+   | ConcatLvalue of int * lvalue
 and lvalue = 
     Identifier of string
   | Subscript of string * expr
