@@ -1,4 +1,4 @@
-type op = Plus | Minus | Multiply | Divide | Modulus | Eq | Ne | Ge | Gt | Le | Lt | And | Or | Xor | Nand | Nor | Xnor | Lshift | Rshift
+type op = Plus | Minus | Multiply | Modulus | Eq | Ne | Ge | Gt | Le | Lt | And | Or | Xor | Nand | Nor | Xnor | Lshift | Rshift
 
 type parameter = string * int * Lexing.position
 

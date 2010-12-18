@@ -1,6 +1,6 @@
 open Int64
 
-type im_op = ImPlus | ImMinus | ImMultiply | ImDivide | ImModulus | ImEq | ImNe | ImGe | ImLe | ImLt | ImAnd | ImOr | ImXor | ImNand | ImNor | ImXnor | ImLshift | ImRshift
+type im_op = ImPlus | ImMinus | ImMultiply | ImModulus | ImEq | ImNe | ImGe | ImLe | ImLt | ImAnd | ImOr | ImXor | ImNand | ImNor | ImXnor | ImLshift | ImRshift
 
 type im_literal = int64 * int
 
@@ -22,12 +22,10 @@ and im_lvalue =
   
 type im_assignment = im_lvalue * im_expr
 
-type im_always_condition = Always | Posedge | Negedge
+type im_always_condition = Always | Pos | Neg
 
-type im_outer_stmt =
-	ImNop
-  | ImInstantiation of string * im_assignment list * im_assignment list
-  | ImAlways of im_always_condition * im_always_stmt list
+type im_instantiation = string * im_assignment list * im_assignment list
+type im_always = im_always_condition * im_always_stmt list
   
 type im_always_stmt =
     ImAlwaysNop
@@ -37,7 +35,7 @@ type im_always_stmt =
 
 and im_case_item = string * im_always_stmt list
 
-type im_decl_type = Wire | Reg
+type im_decl_type = ImWire | ImReg
 type im_decl = im_decl_type * string * int;
 
 type im_mod_decl = {
@@ -46,7 +44,8 @@ type im_mod_decl = {
     im_outputs : (string * int) list;
     im_declarations : im_decl list;
     im_assignments : im_assignment list;
-    im_statements : im_outer_stmt list;
+    im_instantiations : im_instantiations list;
+    im_alwaysstmts : im_always list;
 }
 
 type im_program = im_mod_decl list
