@@ -1,6 +1,7 @@
 \documentclass[letterpaper,11pt]{article}
 \usepackage[letterpaper,margin=1in]{geometry}
 \usepackage{array}
+\newcommand{\tab}{\hspace*{2em}}
 %\setlength{\topmargin}{-.5in}
 %\setlength{\textheight}{9in}
 %\setlength{\oddsidemargin}{.125in}
@@ -20,7 +21,8 @@
 
 \section{An Introduction to Verishort}
     \subsection{Background}
-    \indent Verilog is a very popular hardware description language (HDL) which is widely utilized by
+    
+    \indent\indent Verilog is a very popular hardware description language (HDL) which is widely utilized by
     the electronics hardware design industry. First invented and used in the early 80s at
     Automated Integrated design Systems, Verilog was put into the public domain and
     standardized by the IEEE in 1995. This initial public version of Verilog became known as 
@@ -65,21 +67,29 @@
     \subsection{Lexical Conventions}
         \subsubsection{Tokens}
         There are 5 classes of tokens: identifiers, keywords, numbers, operators, and other separators.
+        
         Blanks, tabs, and newlines (collectively, whitespace) are ignored, except when they serve
         to separate tokens.
+        
         \subsubsection{Comments}
-        The characters \slash* introduce a comment, which is terminated by the characters *\slash.\\
-        The characters \slash\slash also introduce a comment, which is terminated by the newline character. Comments do not 
+        The characters \texttt{/*} introduce a comment, which is terminated by the characters \texttt{*/}.
+        
+        The characters \texttt{//} also introduce a comment, which is terminated by the newline character. Comments do not 
         nest. Lines marked as comments are discarded by the compiler.
+        
         \subsubsection{Data Types}
         The primary data type is the bit, which may store the value 0 or 1. A group of bits comprises a bus. All 
-        multibit binary values are treated as two‚Äôs complement numbers.\\
-        \indent In for-loops (see the corresponding section), the loop variable is assumed to be a simple integer (i.e., 
+        multibit binary values are treated as two's complement numbers.
+        
+        In for-loops (see the corresponding section), the loop variable is assumed to be a simple integer (i.e., 
         natural number).
+        
         \subsubsection{Identifiers}
-        An identifier is a sequence of characters that represent a wire, bus, register, parameter, or module. An 
-        identifier may only include alphanumerical characters or the underscore character (\_). The first character 
+        An identifier is a sequence of characters that represent a wire, bus, register, parameter, or module. 
+        
+        An identifier may only include alphanumerical characters or the underscore character (\_). The first character 
         of an identifier may not be a number.
+        
         \subsubsection{Keywords}
         The following identifiers are reserved as keywords and may not be used for any other purpose: 
         In this manual, keywords are bolded.
@@ -113,7 +123,7 @@
         \end{itemize}
         \subsubsection{Operators}
         An operator is a token that specifies an operation on at least one operand. The operand 
-        may be an expression or a constant. \\
+        may be an expression or a constant. \\\\
         Bitwise operators:
         \begin{itemize}
         \item{\texttt{!}} 
@@ -121,18 +131,18 @@
         \item{\texttt{!\& }} 
         \item{\texttt{$\mid$}}
         \item{\texttt{!$\mid$}} 
-        \item{\texttt{\textasciicircum }}
-        \item{\texttt{!\textasciicircum}} 
-        \item{\texttt{\textless\textless}} 
-        \item{\texttt{\textgreater\textgreater}}
+        \item{\texttt{\^}}
+        \item{\texttt{!\^}} 
+        \item{\texttt{<<}} 
+        \item{\texttt{>>}}
         \end{itemize}
         Comparison operators: 
         \begin{itemize}
         \item{\texttt{==}}
-        \item{\texttt{\textgreater= }}
-        \item{\texttt{\textless= }}
-        \item{\texttt{\textgreater }}
-        \item{\texttt{\textless}}
+        \item{\texttt{>= }}
+        \item{\texttt{<= }}
+        \item{\texttt{> }}
+        \item{\texttt{<}}
         \end{itemize}
         Arithmetic operators: 
         \begin{itemize}
@@ -156,13 +166,14 @@
         \item{\texttt{--}}
         \end{itemize}
         \subsubsection{Buses}
-        \indent A bus represents a multibit wire. The number of bits in a bus must be determinable at compile 
+        A bus represents a multibit wire. The number of bits in a bus must be determinable at compile 
         time. Buses are declared using the syntax \texttt{data\_type bus\_name[number\_of\_bits];} Where 
         data\_type is either \texttt{wire, register} or assumed to be input or output by its position in a module 
         declaration. The number of bits must be a constant. From here, any bit in the bus may be referred 
         to using the subscript syntax: \texttt{bus\_name[bit\_index],} where \texttt{bit\_index} is a constant or expression 
-        that yields an integer value less than or equal to the size of the bus. \\
-        \indent A range of bits in a bus is represented by using the index of the most significant bit in the 
+        that yields an integer value less than or equal to the size of the bus. 
+        
+        A range of bits in a bus is represented by using the index of the most significant bit in the 
         range, followed by the colon character (:), followed by the index of the least significant 
         bit in the range, as the subscript. E.g. wires 4-8 would be referred to by \texttt{bus\_name[7:3]}. 
         Reversing this order is invalid.
@@ -175,21 +186,21 @@
         
         The most basic assignment is of a single wire to a single bit value: \\\\
         \texttt{wire w1 = 0;}  \\
-        \texttt{wire w2 = !w1;     \slash\slash w2 == 1}\\\\
+        \texttt{wire w2 = !w1;     // w2 == 1}\\\\
         A bundle of wires can be assigned to a multi-bit value, as long as the number of bits matches 
         the number of wires in the bundle: \\\\
-        \texttt{wire w3[5] = 01010b;	\slash\slash assigning a binary value} \\
-        \texttt{wire w4[4] = 10d;       \slash\slash assigning a decimal value} \\
-        \texttt{wire w5[10] = \{1,8\{0\},1\};	\slash\slash 1000000001b using concatenation} \\\\
+        \texttt{wire w3[5] = 01010b;	 // assigning a binary value} \\
+        \texttt{wire w4[4] = 10d;       // assigning a decimal value} \\
+        \texttt{wire w5[10] = \{1,8\{0\},1\};	// 1000000001b using concatenation} \\\\
         This does not work and will result in an error because the left hand side and the right hand 
-        side are not the same size.\\
+        side are not the same size:\\
         \texttt{wire w6[10] = 10b;} \\\\
         Note that the number of bits must always be specified for more than one bit. \\\\
         Subsets of buses can be assigned: \\\\
         \texttt{wire w6[5];} \\
         \texttt{w6[3:0] = 4d;} \\ 
         \texttt{w6[4] = 1b; // w6 == 10100b} \\\\
-        The two sides of an assignment must have the same number of bits. \\
+        The two sides of an assignment must have the same number of bits. \\\\
         The assignment operator returns the right operand and associates from 
         right to left, making the following possible:  \\\\
         \texttt{wire w7[5], w8[3];} \\
@@ -267,7 +278,7 @@
         \begin{center} 
         \begin{tabular}{|l|>{\texttt\bgroup}l<{\egroup}|>{\texttt\bgroup}l<{\egroup}|>{\texttt\bgroup}l<{\egroup}|}
         \hline
-        Operator&Example&Equivalency&result\\ \hline
+        Operator&Example&Equivalency&Result\\ \hline
         AND		&	\&a       	&	example[0] \& example[1] \& example[2]     &	-		\\ \hline
         NAND		&	!\&a      	&	!example[0] \& !example[1] \& !example[2]  &	0		\\ \hline
         OR		&	|a       	&	example[0] | example[1] | example[2]       &	1		\\ \hline
@@ -278,39 +289,336 @@
         \end{center}
         
         \subsubsection{Arithmetic}
-        Arithmetic operators are shorthand for common equivalent but complex operations. They operate on two bits or buses which do not have to be the same size. They will return a bit or bus. All operations are done in two‚Äôs complement.\\
-        In general, the bus that receives the result must contain enough bits to hold all bits in the result, or the result of the arithmetic operation may be undefined.\\\\
+        Arithmetic operators are shorthand for common equivalent but complex operations. They operate 
+        on two bits or buses which do not have to be the same size. They will return a bit or bus. All 
+        operations are done in two's complement.\\
+        In general, the bus that receives the result must contain enough bits to hold all bits 
+        in the result, or the result of the arithmetic operation may be undefined.\\\\
         \texttt{wire e0[3] = 011b //equivalent to 3d and can be expanded to 0011b}\\
 		\texttt{wire e1[3] = 111b //equivalent to -1d and can be expanded to 1111b}\\
 		\texttt{wire e3[3];}\\
 		\texttt{wire e4[4];}\\
         
-       \begin{center} 
-        \begin{tabular}{|>{\texttt\bgroup}l<{\egroup}|>{\texttt\bgroup}l<{\egroup}|p{2in}|>{\texttt\bgroup}l<{\egroup}|}
+        \begin{center} 
+        \begin{tabular}{|l|>{\texttt\bgroup}l<{\egroup}|p{2in}|>{\texttt\bgroup}l<{\egroup}|}
         \hline
         Operator&Example&Notes&Result\\ \hline
-        Plus          	&	e3=e0+e1; e4=e0+e1	&	If there is overflow and the bus holding the result has insufficient bits, the result of the operation may be incorrect. If the resultant has n bits and the addends fewer, the addends will both be extended to n bits before addition occurs.     	&	e3=010b; e4=0010b \\ \hline
-        Minus         	&	e3=e0-e1; e4=e0-e1	&	Equivalent to \texttt{e0+{!e1[n],e1[n-1:0]}}.                           &	e3 = 100b; e4 = 0100b \\ \hline
-        Multiplication	&	e0*e1              &	Returns a bus that is n+m-1 long                                        &	10101b                \\ \hline
-        Division      	&	e0/e1               &	not implemented                                                         & 	                      \\ \hline
-        Modulus       	&	e0\%e1             	&	Returns a bus that is n long where n is the size of the first operand   &	0b11                  \\ \hline
-\end{tabular}
-\end{center}
+        Plus          	&	e3=e0+e1; e4=e0+e1	&	If there is overflow and the bus holding the result 
+        has insufficient bits, the result of the operation may be incorrect. If the resultant has n bits and the
+         addends fewer, the addends will both be extended to n bits before addition occurs.     	&
+         	e3=010b; e4=0010b \\ \hline
+        Minus         	&	e3=e0-e1; e4=e0-e1	 & Equivalent to \texttt{e0+{!e1[n],e1[n-1:0]}}.        
+                           &	e3 = 100b; e4 = 0100b \\ \hline
+        Multiplication	&	e0*e1              &	Returns a bus that is n+m-1 long                                      &
+        	10101b                \\ \hline
+        Division      	&	e0/e1               &	Not implemented                                                         & 	                      
+        \\\hline
+        Modulus       	&	e0\%e1             	&	Returns a bus that is n long where n is the size 
+        of the first operand   &	0b11                  \\ \hline
+        \end{tabular}
+        \end{center}
         
         \subsubsection{Shifting}
-Shifting operations will literally shift the entire bus to the left or right and will discard the bits shifted off the end.\\\\
-\texttt{e0 = 0111b; //7d}\\
-\texttt{e1 = 1111b; //-1d}\\
+        Shifting operations will literally shift the entire bus to the left or right and will discard the 
+        bits shifted off the end.\\\\
+        \texttt{e0 = 0111b; //7d}\\
+        \texttt{e1 = 1111b; //-1d}\\
         
         \begin{center} 
-        \begin{tabular}{|>{\texttt\bgroup}l<{\egroup}|>{\texttt\bgroup}l<{\egroup}|p{2in}|>{\texttt\bgroup}l<{\egroup}|}
+        \begin{tabular}{|l|>{\texttt\bgroup}l<{\egroup}|p{2in}|>
+        {\texttt\bgroup}l<{\egroup}|}
         \hline
         Operator&Example&Note&Result\\ \hline
-        Left-shift &	e0<<2; e1<<2	&	Left shift will always fill with zeros     	&	1100b //-4d; 1100b	  \\ \hline
-        Right-shift &	e0>>2; e1>>2	&	Right shift will always fill with the most significant bit to preserve sign &	0001b //1d; 1111b //-1d \\ \hline
-\end{tabular}
-\end{center}
+        Left-shift &	e0<<2; e1<<2	&	Left shift will always fill with zeros     	&	
+        1100b //-4d; 1100b	  \\ \hline
+        Right-shift &	e0>>2; e1>>2	&	Right shift will always fill with the most significant bit 
+        to preserve sign &	0001b //1d; 1111b //-1d \\ \hline
+        \end{tabular}
+        \end{center}
         
+        \subsubsection{Sign Extension}
+        The sign extension operator sign-extends the right operand to the number of bits specified by the 
+        left hand side operand in decimal. The left operand must be determinable at compile time.
+        Attempts to specify a number of bits that is smaller than the number of bits in the right operand is a 
+        syntax error. The operation is done in two’s complement.\\\\
+        \texttt{e0 = 0111b; //7d}\\
+        \texttt{e1 = 1111b; //7d}\\
+        
+        \begin{center} 
+        \begin{tabular}{|l|>{\texttt\bgroup}l<{\egroup}|p{2in}|>{\texttt\bgroup}l<{\egroup}|}
+        \hline
+        Operator&Example&Note&Result\\ \hline
+        Sign Extension &	8'e0; \ 8'e1	&	Left hand side is always a decimal number.     	&	
+        0000011b; \ 11111111b \\ \hline
+        \end{tabular}
+        \end{center}
+        
+        \subsubsection{Comparison}
+        Comparison operators will compare the values of two buses which do not need to be equally sized 
+        and will return a one bit true or false result.\\\\        
+        \texttt{e0 = 0111b; //7d}\\
+        \texttt{e1 = 0111b; //7d}\\
+        \texttt{e2 = 1111b; //-1d}\\
+        
+        
+        \begin{center} 
+        \begin{tabular}{|l|>{\texttt\bgroup}l<{\egroup}|>{\texttt\bgroup}l<{\egroup}|}
+        \hline
+        Operator&Example&Result\\ \hline
+        Less than				&	e0 < e1 		&	0 \\ \hline
+        Less than or equal to	&	e0 <= e1		& 	1 \\ \hline
+        Greater than				&	e0 > e2		& 	1 \\ \hline
+        Greater than or equal to &	e >= e2		& 	1 \\ \hline
+        Equal to					& e0 == e1		& 	1 \\ \hline
+        Not equal to				& e0 != e1		&	0 \\ \hline
+        
+        \end{tabular}
+        \end{center}
+        
+        
+        \subsubsection{Precedence and associativity}
+        
+        \begin{center} 
+        \begin{tabular}{|>{\texttt\bgroup}l<{\egroup}|l|}
+        \hline
+        Operators, in order of decreasing precedence &Associativity\\ \hline
+        ! \ + \ - \ \& \ !\&	 \ \^ \ !\^ 	\ $\mid$ \ !$\mid$ (unary) \ ' (sign extension) &	 right to left \\ \hline
+        * \% /	& 	left to right \\ \hline
+        	+ - (binary)		& 	left to right \\ \hline
+        << >> & 	left to right \\ \hline
+        < <= > >=					& 	left to right \\ \hline
+        == !=				&	left to right \\ \hline
+        \& \ !\& (binary)				&	left to right \\ \hline
+        \^ \ !\^ \ (binary)		&	left to right \\ \hline
+        $\mid$ !$\mid$ (binary)				&	left to right \\ \hline
+        =				&	right to left \\ \hline
+        
+        \end{tabular}
+        \end{center}
+        
+    \subsection{Declarations}
+    There are three types of declarations in Verishort: wires, for passing values between
+    modules; registers, for storing values between clock cycles; and modules, blocks of
+    Verishort code offering specific functionality.\\
+    
+        \subsubsection{Identifiers}
+        Identifiers are user-friendly names, much like variable names in most programming
+        languages.  They must start with an upper- or lower-case letter followed by any 
+        sequence of letters, numbers, and underscores.  No other characters are allowed in
+        identifier names.\\
+        
+        \subsubsection{Wire Declarations}
+        Wires can be single or multi-bit (buses/bundles).  They are declared using the keyword
+        \texttt{wire} followed by a space, then an identifier, then an optional number inside
+        square brackets.  The number inside the brackets is the number of bits to be used for the 
+        bus, using 0-indexing.  The MSB is at the highest bit value, i.e., at index 15 for a 16-bit
+        wire.  If the brackets and enclosed number are omitted, the wire is assumed to hold a
+        single bit.\\\\
+        \texttt{wire w1; \tab // single bit}\\
+        \texttt{wire w2[5]; // five bits with MSB at index 4, LSB at index 0};\\\\
+        In addition, the declared wires can take values immediately during the declaration. 
+        Following the identifier (or optional bracketed expression) another space, an equals 
+        sign, a space, a binary, decimal, or logical value can be used:\\\\
+        \texttt{wire w3 = !w2[0];}\\
+        \texttt{wire w4[3] = 4d;}\\\\
+        The shorthand for digit repetition can also be used:\\
+        \texttt{wire w5[16] = {1,14{0},1};}\\\\
+        Subsets of buses can be assigned:\\
+        \texttt{wire w6[8] = w5[0:7];}\\\\
+        Equivalently:\\
+        \texttt{for(i = 0; i < 8; i = i + 1) \{\\
+        \tab w6[i] = w5[i];\\
+        \}}\\
+        
+        \subsubsection{Register Declarations}
+        Registers are declared exactly like wires but with the \texttt{register} keyword.
+        The main difference between registers and wires are that registers can be reassigned 
+        at will at any point in your code.  They can be used to store values between clock 
+        cycles, for example.\\
+        
+        \subsubsection{Module Declarations}
+        Modules are analogous to classes in Java.  Modules allow code to be grouped to offer
+        specific functionality.\\
+        They are declared with the \texttt{module} keyword, followed by an identifier, followed by a
+        parenthesized expression.  The parenthesized expression contains a comma-separated list of
+        input ports preceded by the \texttt{input} keyword, followed by a semi-colon, followed by a
+        comma-separated list of output ports preceded by the \texttt{output} keyword.  The body of
+        the module (discussed below) followed inside braces:\\
+        
+        \texttt{module m1(input in1, in2, in3[3]; output out[5]) \{ ... \} }\\\\
+        In addition to the user-specified inputs and outputs (see the \emph{Assignment} section for
+        information on binding ports), each module has an implicit reset input (keyword \texttt{reset})
+        and clock input (keywords \texttt{posedge} and \texttt{negedge}).\\\\
+        
+        Modules can be declared in any order but all code must reside in one file.  Modules cannot be 
+        nested, i.e., one module cannot be declared inside of another module.  However, a module can be 
+        instantiated (\emph{Instantiating A Module} below) inside of another module as long as there are 
+        no infinitely recursive references.
+        
+        
+        \subsubsection{Building A Module}
+        A module is a series of declarations, assignments, logic, and conditional statements. 
+        All declarations in a module must appear at the beginning of the module, before any other statements.\\
+        Here is a brief example:\\\\
+        \texttt{
+        module m2(input enable, in[4]; output out[4]) \{ \\
+        \tab register r[4] = 0; \\
+        \tab if(posedge) \{ \\
+        \tab\tab if(reset) \{ \\
+        \tab\tab\tab r = 0000b; // equivalent to r = 0d; \\
+        \tab\tab \} \\
+        \tab \} \\
+        \tab else if(enable == 1b) \{ \\
+        \tab\tab r = in; \\
+        \tab\tab out = r; \\
+        \tab\} \\
+        \}}
+        
+        This is a simple four-bit latch. On every positive clock edge, if the enable bit is set to 1, 
+        the output will be set to the input. If the enable bit is set to 0, the output will remain 
+        unchanged. However, if the module's reset bit is 1 when the clock edge is detected, the 
+        register values and output will be reset to \texttt{0d}.\\\\
+        This module is reusable. Here is an example of instantiating the module from within another module: \\\\
+        \texttt{
+        module m3(input check1, check2, in[4]; output out[4]) \{ \\
+        \tab wire enabler, resetter; \\
+        \tab m2(enable = enabler, in = in; out = out; reset = resetter); \\\\
+        \tab if(posedge) \{ \\
+        \tab\tab enabler = check1; \\
+        \tab\tab resetter = check1 \& check2; \\
+        \tab \}  \\
+        \}}
+        
+        The enable bit of module \texttt{m2} is 1 if input \texttt{check1} in module \texttt{m3} is 1. If both 
+        \texttt{check1} and \texttt{check2} are 1, then the module m2 is reset. check2 on its own does nothing.\\\\
+        Notice that though reset is not listed as an input of module  \texttt{m2}, it is implicit; it can be 
+        referred to by keyword \texttt{reset}.	\\\\
+        In addition to binding wires to outputs, subsets of outputs can be returned as in traditional 
+        languages.  To indicate that a module returns \emph{n} bits, put the number of bits to be returned 
+        (as in a \texttt{wire} declaration) in square brackets after the identifier, including for a single 
+        bit returned, unlike wires.\\\\  
+        If you wish to return all or a subset of outputs (replacing or in addition to the normal outputs 
+        via binding), list them after the \texttt{return} keyword anywhere in a block.  A single block may not 
+        have multiple \texttt{return} keywords. \\\\
+        \texttt{
+        module m10[5] (input in[5]; output out[3]) \{ \\
+        \tab ... \\
+        \tab out = ... ; \\
+        \tab return \{out,in[1],in[2]\}; \\
+        \}}\\\\
+        These can then be used as follows:
+        \texttt{wire w11[5] = m10(...);}
+        
+        \subsubsection{Statements}
+        A semicolon is necessary after a statement in Verishort.  Because whitespace has no effect, it is 
+        necessary to have semicolons to signal the end of a statement.\\\\
+        Examples from previous sections:\\
+        \texttt{wire w3 = !w2[0];}\\
+        \texttt{wire c[2] = 01b;} \\\\
+        For some statements, such as connectivity, a statement is inherently acknowledged through the brackets.\\\\
+        Example from previous sections:\\
+        \texttt{wire a = 1;\\
+        wire b[4];\\
+        wire c[16] = \{0\{b\},0,0,10b,4\{0,a\},b\} \tab // results in 0010010101011111b \\
+        b = \{4\{a\}\};	\tab\tab\tab // results in 1111b}\\\\
+        
+        \subsubsection{Conditional Statements}
+        Conditional statements work just as they do in the C programming languages with \texttt{if} and \texttt{else}. 
+        Following an \texttt{if}, an expression is placed within parenthesis.  This expression must evaluate to a bit 
+        value.  An expression returning 1 evaluates as the equivalent of ‘true’ and 0 as ‘false’.  An \texttt{else} 
+        block attaches itself to the closest \texttt{else}-less \texttt{if} block.\\\\
+        \texttt{wire gate = 1; \\
+        wire b[2]; \\
+        if (gate \& 1b > 0b) \{ \\
+        \tab b = 10b; \\
+        \} \\
+        else \{ \\
+        \tab b = 01b; \\
+        \}}\\\\
+        The power of conditional statements come in their ability to use the clock.  For example, an incrementer:\\\\
+        \texttt{
+        register a[8] = 0; \\
+        if (posedge) \{ \\
+        \tab a = a + 1b;\\
+        \}}\\\\
+        Asynchronous and synchronous logic can also be combined together seamlessly:\\\\
+        \texttt{
+        wire gate = 1; \\
+        register a[8] = 0; \\
+        if (posedge \& gate) \{ \\
+        \tab a = a + 1b; \\
+        \}}\\\\
+        
+        \subsubsection{Case\slash Switch Structures}
+        Case structures use the \texttt{case} keyword and work similarly to the switch statement in C.  The main 
+        difference is that the case structure in Verishort does not provide fall-through or default behavior.\\\\
+        This is especially useful when the user wants to test for conditions on certain bits but doesn’t care 
+        about the value of other bits.  Those bits can be replaced with \texttt{x} instead of 1 or 0.\\\\
+        Inside of a case block, the condition is followed by a colon, then followed by the resulting statement, 
+        followed by a semicolon.\\\\
+        If-else statements and for-loops cannot appear inside case structures: \\\\
+        \texttt{
+        wire w[3] = ... \tab // also assume a 3-bit output ‘out’ \\
+        case(w) \{ \\
+        \tab 1x1b : out = 111b; out2= 110b; \\
+        \tab x00b : out = 000b; \\
+        \}} \\\\
+        This code has the effect of creating 16 \texttt{example\_modules} which are all wired.
+    \subsection{Scope}
+    VeriShort tends to be a linear language, with very little dependence on lexical scope and linkage. 
+    That being said, VeriShort still limits scope for certain conditions.  Importantly, data declared 
+    within one module is not available outside of that module.  Similarly, data declared within blocks 
+    (between the brackets in \texttt{if-else} blocks and \texttt{for} loops) is not available
+    outside of those blocks.
+    
+    \subsection{Preprocessor}
+    Like the \#define directive in C, the \texttt{parameter} keyword can be used in VeriShort to replace 
+    numbers before compile time.  For example, in the following code:\\\\
+    \texttt{
+    parameter const = 1010b; \\
+    wire c[4] = const;}\\\\
+    The const identifier is literally replaced with the number 1010b before compile time.  As with any assignment, 
+    notice that \texttt{c} contains the correct number of bits to hold the constant.\\\\
+    To reduce the repetitiveness of Verilog, we automatically assume clock and reset ports in all modules that 
+    use their functionality.  So, a clock input port is included in any module that uses the \texttt{posedge} 
+    or \texttt{negedge} keywords.  Similarly, a reset input port is included in any module that uses registers 
+    to the effect that asserting a reset will set all registers back to 0.  These ports can be overloaded by 
+    simple specifying a different value for them.  This is useful for gating the clock like in the following 
+    example:\\\\
+    \texttt{
+    module gater(input gate, i; output o) \{ \\
+    \tab add\_on\_clk(in=i; out=o); \\
+    \tab clock = clock \& gate; \\
+    \}}\\\\
+    Assuming that the \texttt{add\_on\_clk} module actually uses a clock, this also has the effect of changing the clock 
+    definition in the \texttt{add\_on\_clock} and any other module instantiated within the gater module.\\\\
+    
+    \subsection{Standard Library Modules}
+    Because of the repetitiveness of many aspects of hardware design, the Verishort language includes standard modules 
+    of many commonly used electronic components in the hope of reducing some tedium. The definitions given below are 
+    pseudo-module declarations. The appropriate value of n will be selected at compile time.  Note that, like any 
+    module port, clk and reset do not need to be specified.  By Verishort convention, a \texttt{clk} is explicitly assumed 
+    in all modules that use the \texttt{posedge/negedge} keywords.  A reset is explicity assumed in all modules that use the 
+    reset keyword.
+    
+        \subsubsection{Latches}
+        \texttt{module SRL[n] (input S[n], reset[n], E[n]; output Q[n], QNOT[n]) \\
+        module JKL[n] (input J[n], K[n], E[n]; output Q[n], QNOT[n]) \\
+        module DL[n] (input D[n], E[n]; output Q[n], QNOT[n]) \\
+        module TL[n] (input T[n], E[n]; output Q[n], QNOT[n]}
+        
+        \subsubsection{Flipflops}
+        \texttt{module DFF[n] (input D[n], S[n], reset[n], clk; output Q[n], QNOT[n]) \\
+        module TFF[n] (input T[n], clk; output Q[n], QNOT[n]) \\
+        module JKFF[n] (input J[n], K[n], clk; output Q[n], QNOT[n])}
+        
+        \subsubsection{Multiplexers}
+        \texttt{module MUX[1] (input IN[n],SEL[log2 n]; output OUT) \\
+        module DEMUX[n] (input IN[n], SEL[log2 n]; output OUT[n])}
+        
+        \subsubsection{Decoders}
+        \texttt{module DECODE[n] (input IN[log2 n]; output OUT[n]) \\
+        module ENCODE[log2 n] (input IN[n]; output OUT[log2 n]) //Priority Encoder}
 
 \section{Project Plan}
     \subsection{Team Responsibilities}
