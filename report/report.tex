@@ -9,7 +9,8 @@
 
 \begin{document}
 \title{Verishort HDL}
-\author{Anish Bramhandkar \ Elba Garza \ Scott Rogowski \ Ruijie Song}
+\author{Anish Bramhandkar \ Elba Garza \ Scott Rogowski \ Ruijie Song\\\\
+\textbf{Motto}: "Whatever."}
 \renewcommand{\today}{December 22, 2010}
 \maketitle
 
@@ -36,11 +37,11 @@
     than processors and memory. However, we believe that another part of this simply poor 
     language design and can be improved. \\
     \indent VeriShort HDL is meant to simplify the Verilog-2005 language to make it easier to read 
-    and write. First, we have reduced repetitiveness in accordance with the DRY (Don’t 
+    and write. First, we have reduced repetitiveness in accordance with the DRY (Don't 
     repeat yourself) philosophy by simplifying module input/output syntax and instantiation. 
-    Next, we introduced some C-language features such as brackets and array-like bus 
-    descriptions. We substantially simplified synchronous logic by doing away with ‘always’ 
-    syntax and replacing it with simple ‘if’ statements. The list of reserved keywords has been 
+    Next, we introduced some C-language features such as brackets and array-like bus
+    descriptions. We substantially simplified synchronous logic by doing away with \texttt{always} 
+    syntax and replacing it with simple \texttt{if} statements. The list of reserved keywords has been 
     substantially shortened in order to make VeriShort completely synthesizable and to 
     remove rarely used features. Finally, we added a standard library of commonly used 
     electronic components like latches, multiplexers, and decoders to further reduce the 
@@ -54,8 +55,14 @@
     \subsection{Related Work}
         \subsection{Goals of Verishort}
         \subsubsection{Short}
+        We want Verishort code to be comparibly shorter than the Verilog code it creates. We want to
+        take away the humdrum of writing Verilog code and make it easier to write what we wish to write. 
         \subsubsection{Logical}
+        Verishort shouldn't skimp on the general power of Verilog either. Therefore, we support the most
+        common operations and help make common structures easy to write. 
         \subsubsection{Clean}
+        We hope to be able to write clean and understandable code that can be, at a glance, intuitively 
+        translated to its equal Verilog code. The syntax should be friendly, logical, and quick to learn.
 
 
 \section{Tutorial}
@@ -119,7 +126,7 @@
         \item{The characters 0 and 1 are valid binary digits.} 
         \item{The characters 0-9 are valid integer digits.}
         \item{Extended binary numbers are like normal binary numbers, but may also use the
-        character ‘x’ as a binary digit. They may only be used in case structures.}
+        character \texttt{x} as a binary digit. They may only be used in case structures.}
         \end{itemize}
         \subsubsection{Operators}
         An operator is a token that specifies an operation on at least one operand. The operand 
@@ -295,9 +302,9 @@
         In general, the bus that receives the result must contain enough bits to hold all bits 
         in the result, or the result of the arithmetic operation may be undefined.\\\\
         \texttt{wire e0[3] = 011b //equivalent to 3d and can be expanded to 0011b}\\
-		\texttt{wire e1[3] = 111b //equivalent to -1d and can be expanded to 1111b}\\
-		\texttt{wire e3[3];}\\
-		\texttt{wire e4[4];}\\
+        \texttt{wire e1[3] = 111b //equivalent to -1d and can be expanded to 1111b}\\
+        \texttt{wire e3[3];}\\
+        \texttt{wire e4[4];}\\
         
         \begin{center} 
         \begin{tabular}{|l|>{\texttt\bgroup}l<{\egroup}|p{2in}|>{\texttt\bgroup}l<{\egroup}|}
@@ -305,8 +312,8 @@
         Operator&Example&Notes&Result\\ \hline
         Plus          	&	e3=e0+e1; e4=e0+e1	&	If there is overflow and the bus holding the result 
         has insufficient bits, the result of the operation may be incorrect. If the resultant has n bits and the
-         addends fewer, the addends will both be extended to n bits before addition occurs.     	&
-         	e3=010b; e4=0010b \\ \hline
+        addends fewer, the addends will both be extended to n bits before addition occurs.     	&
+        e3=010b; e4=0010b \\ \hline
         Minus         	&	e3=e0-e1; e4=e0-e1	 & Equivalent to \texttt{e0+{!e1[n],e1[n-1:0]}}.        
                            &	e3 = 100b; e4 = 0100b \\ \hline
         Multiplication	&	e0*e1              &	Returns a bus that is n+m-1 long                                      &
@@ -622,6 +629,12 @@
 
 \section{Project Plan}
     \subsection{Team Responsibilities}
+        \subsubsection{Round-Robin Dictatorship}
+        At some point in this project, each of our members has been our dictator. Leadership switched hands especially when
+        moving between important phases in the project. For example, Elba was dictator for the failed nation of Natural. Anish
+        usurped the leadership position soon after Verishort was established. Next was Scott, when regular meetings started
+        getting iffy during midterms. Soon after, our final and present dictator took hold, our dear leader Tim Song. 
+        
     \subsection{Project Timeline}
     \subsection{Software Development Environment}
     \subsection{Project Log}
