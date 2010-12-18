@@ -247,7 +247,7 @@ let translate_expr environ immod expr = match expr with
               with Failure(_) -> raise (Parse_Failure("Binary literals may not exceed 64 bits", pos))), String.length b)
   | Lvalue(l, pos) -> ImLvalue(to_im_lavalue environ immod l pos)
   | Binop(e1, op, e2, _) -> ImBinop(translate_expr environ immod e1, to_im_op op, translate_expr environ immod e2)
-  | Assign(lvalue, expr, _) -> (* *)
+  | Assign(lvalue, expr, _) -> (** **)
   | Signext(bits, expr, _) -> 
   | Reduct(op, lvalue, _) -> ImReduct(to_im_op op, to_im_lvalue lvalue)
   | Not(expr, _) -> ImNot(translate_expr environ immod expr)
@@ -267,8 +267,8 @@ let translate_if environ immod (cond, stmt1, stmt2) = match cond
 in   
 
 let rec translate_stmt environ immod vshstmt = match vshstmt
-    with Nop ->
-  | Expr(expr, _) ->
+    with Nop -> []
+  | Expr(expr, _) -> ignore (translate_expr environ immod expr); [] 
   | Block(lst, _) -> List.concat (List.map (translate_stmt environ immod) lst)
   | If(cond, stmt1, stmt2, _) -> translate_if environ immod (cond, stmt1, stmt2)
   | Case(lvalue, lst, _) ->
