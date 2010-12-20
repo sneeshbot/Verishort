@@ -396,16 +396,18 @@ and convert_bindings_out environ in_always count immod othermod bindlst pos =
 	  (immod, count, [], []) bindlst) in (immod1, count1, list1)
 
 
-(* translate_stmt: enviro -> im_moddecl -> stmt -> int -> bool -> im_always_stmt list * int * bool *)
+(* translate_stmt: enviro -> im_moddecl -> stmt -> int -> bool -> im_moddecl * im_always_stmt list * int *)
 let rec translate_stmt environ immod vshstmt count in_always = match vshstmt
-    with Nop -> []
-  | Expr(expr, _) -> ignore (translate_expr environ immod expr); [] 
-  | Block(lst, _) -> List.concat (List.map (translate_stmt environ immod) lst)
-  | If(cond, stmt1, stmt2, _) -> translate_if environ immod (cond, stmt1, stmt2)
+    with Nop -> (immod, [], count)
+  | Expr(expr, _) -> let (immod1, _, count1) = translate_expr environ immod expr count in (immod1, [], count1) 
+  | Block(lst, _) -> List.fold_left (fun (immod1, stmtlst1, count1) stmt -> 
+		                    let (immod2, stmtlst2, count2) = translate_stmt environ immod1 stmt count1 in_always in
+											  (immod2, stmtlst1 @ stmtlst2, count2)) (immod, [], count) lst
+  | If(cond, stmt1, stmt2, _) -> 
   | Case(lvalue, lst, _) ->
-  | Return(expr, _) ->
+  | Return(expr, pos) -> translate_stmt environ immod Assign("return", expr, pos) count in_always 
   | For(init, cond, incr, stmt, _) -> 
-	| Assign(lvalue, expr, pos) ->()
+	| Assign(lvalue, expr, pos) ->
   
 (* translate_module: env -> mod_decl -> im_mod_decl*)
 let translate_module environ vshmod = 
