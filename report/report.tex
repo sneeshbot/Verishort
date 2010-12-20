@@ -66,6 +66,10 @@
         translated to its equal Verilog code. The syntax should be friendly, logical, and quick to learn.
 
 
+
+%%%%%%%%%%%%%%%%%%%%%%%%%
+%TODO: Together?
+%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Tutorial}
     \subsection{A First Example}
     \subsection{Compiling and Running a Verishort file}
@@ -638,44 +642,77 @@
         We mostly worked together during the large blocks of time which we held our meetings. All sections were written with
         all members present to catch mistakes or give suggestions. 
     \subsection{Project Timeline}
-	Week of September 13, 2010 - Our team got together, and brainstormed.
-	Week of September 20, 2010 - Natural, our first attempt at a project, was born.
-	Week of September 27, 2010 - A written proposal for Natural was submitted.
-	Week of October 4, 2010 - No-op.
-	Week of October 11, 2010 - Met with Professor Edwards and got recommended to establish a new project.\\
-	Began looking into Verilog a possible project replacement. 
-	Week of October 18, 2010 - Verishort, our eventual final project was born.
-	Week of October 25, 2010 - Frantic writing of Language Reference Manual Begins.
-	Week of November 1, 2010 - Final writing of LRM finished and submitted. 
-	Week of November 8, 2010 - Initial coding of grammar written. 
-	Week of November 15, 2010 - 
-	Week of November 22, 2010 - 
-	Week of November 29, 2010 -
-	Week of December 6, 2010 -
-	Week of December 13, 2010 - 
-	Week of December 20, 2010 -  
-
+    	Our goals timewise were as follows:
+	\begin{center} 
+    \begin{tabular}{|l|p{4in}|} \hline
+    Week of&Work Contributed\\ \hline
+    September 27, 2010 & Submit project proposal. \\
+    October 18, 2010 & Finish first writing of Language Reference Manual (LRM). \\
+    November 1, 2010 & Edit and submit LRM.  \\
+    November 8, 2010 & Complete parser and establish grammar.  \\ %TODO
+    November 29, 2010 & Finish code generation and error recovery. \\ %TODO
+    December 6, 2010 & Write and test cases. \\ %TODO
+    December 13, 2010 & Write report and submit final coding. \\ \hline %TODO
+    \end{tabular}
+    \end{center}
     
     \subsection{Software Development Environment}
-	GEDIT!
-    \subsection{Project Log}
+    For version control, our team signed up for github accounts and used git from our 
+    personal computers to collaborate on the project. All code was written in O'CAML and compiled with ocamlc, ocamllex,
+    and ocamlyacc with accompanying makefiles to make compiling and linking easier.  
     
+    As stated before, we mostly worked for large segments of time during our designated weekly meeting times, where we all 
+    got together in a room and pushed out code together that all could see and scrutinize. Anish would connect a large
+    21" display to his computer, so we could see what was coded and written.\\\\
+    \textbf{For developing in Verishort}:\\
+    To simplify writing Verishort code, we created a syntax and keyword highlighter for gedit. Though we planned to reach
+    out to other text editors like vim and emacs, as always, we did not have time for it. Below is a screenshot of our
+    gedit syntax highlighter at work. 
+    
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    %TODO: Picture of development environment.
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    
+    \subsection{Project Log}
+    \begin{center} 
+    \begin{tabular}{|l|p{4in}|} \hline
+    Week of&Work Contributed\\ \hline
+    September 13, 2010 & Our team got together, and brainstormed possible projects. \\
+    September 20, 2010 & Natural, our first attempt at a project, was born.\\
+    September 27, 2010 & A written proposal for Natural was submitted.\\
+    October 11, 2010 & Met with Professor Edwards and got recommended to establish a new project. Began looking into 
+    Verilog a possible project replacement. \\
+    October 18, 2010 & Verishort, our eventual final project was born.\\
+    November 1, 2010 & Final writing of LRM finished and submitted. \\
+    November 22, 2010 & Parser and final grammar established and generated. \\ %TODO
+    November 29, 2010 & Code generation initiated. \\ %TODO
+    December 6, 2010 & Error recovery and code generation completed.\\ %TODO
+    December 13, 2010 & Test cases and programs created and tested. \\ %TODO
+    December 20, 2010 &  Report and final check-through done. \\ \hline %TODO
+
+    \end{tabular}
+    \end{center}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% TODO: Anish and Tim
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%    
 \section{Architectural Design}
     \subsection{Architecture}
     \subsection{the Runtime Environment}
     \subsection{Error Recovery}
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% TODO: Scott
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Testing Plan}
-    \subsection{Goals}
-    \subsection{Hypothesis}
-    \subsection{Methods}
-        \subsubsection{Phase I}
-        \subsubsection{Phase II}
-        \subsubsection{Phase III}
+    \subsection{Purpose}
+    \subsection{Test Suites}
+    \subsection{Test Reasoning}
     \subsection{Tools}
-    \subsection{Implementation}
-        \subsubsection{Phase I}
-        \subsubsection{Phase II}
-        \subsubsection{Phase III}
+    
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Mushy stuff that can be done at the end.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%    
+\section{Lessons Learned}
         
 \end{document}
