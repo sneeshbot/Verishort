@@ -4,7 +4,7 @@
 %token SEMICOLON LPAREN RPAREN LBRACE RBRACE COMMA COLON LBRACKET RBRACKET EOF
 %token CASE CLOCK CONCAT ELSE FOR IF INPUT MODULE NEGEDGE OUTPUT PARAMETER POSEDGE REG RESET RETURN WIRE
 %token ASSIGN NOT OR XOR AND NOR XNOR NAND EQ NE GT GE LT LE LSHIFT RSHIFT PLUS MINUS MULTIPLY DIVIDE MODULUS SIGEXT
-%token NOELSE
+%token NOELSE UMINUS
 %token <string> ID
 %token <int> DLIT
 %token <string> BLIT
@@ -13,7 +13,6 @@
 
 %nonassoc NOELSE
 %nonassoc ELSE
-%right ASSIGN
 %left OR NOR
 %left XOR XNOR
 %left AND NAND
@@ -22,7 +21,7 @@
 %left LSHIFT RSHIFT
 %left PLUS MINUS
 %left MULTIPLY DIVIDE MODULUS 
-%right SIGEXT NOT
+%right SIGEXT NOT UPLUS
 
 %start program
 %type <Ast.program> program 
@@ -138,6 +137,8 @@ stmt:
 	| CASE LPAREN lvalue RPAREN LBRACE case_list RBRACE { Case($3, List.rev $6, Parsing.symbol_start_pos ()) }
 	| FOR LPAREN expr_opt SEMICOLON expr_opt SEMICOLON expr_opt RPAREN stmt { For($3, $5, $7, $9, Parsing.symbol_start_pos ()) }
 	| SEMICOLON { Nop(Parsing.symbol_start_pos ()) } /* empty statements */
+	| lvalue ASSIGN expr SEMICOLON { Assign($1, $3, Parsing.symbol_start_pos ()) } 
+
 
 condition:
 		POSEDGE { Posedge }
@@ -162,7 +163,6 @@ expr:
 		DLIT { DLiteral($1, Parsing.symbol_start_pos ()) }
 	| BLIT { BLiteral($1, Parsing.symbol_start_pos ()) }
 	| lvalue { Lvalue($1, Parsing.symbol_start_pos ()) }
-	| lvalue ASSIGN expr { Assign($1, $3, Parsing.symbol_start_pos ()) } 
 	| expr PLUS expr { Binop($1, Plus, $3, Parsing.symbol_start_pos ()) }
 	| expr MINUS expr { Binop($1, Minus, $3, Parsing.symbol_start_pos ()) }
 	| expr MULTIPLY expr { Binop($1, Multiply, $3, Parsing.symbol_start_pos ()) }
@@ -183,7 +183,9 @@ expr:
 	| expr XNOR expr { Binop($1, Xnor, $3, Parsing.symbol_start_pos ())}
 	| expr LSHIFT expr {Binop($1, Lshift, $3, Parsing.symbol_start_pos ()) }
 	| expr RSHIFT expr { Binop($1, Rshift, $3, Parsing.symbol_start_pos ())}
-	| NOT expr {Not($2, Parsing.symbol_start_pos ())}
+	| NOT expr { Unary(Not, $2, Parsing.symbol_start_pos ()) }
+	| PLUS expr %prec UPLUS { Unary(Plus, $1, Parsing.symbol_start_pos ()) }
+	| MINUS expr %prec UPLUS { Unary(Minus, $1, Parsing.symbol_start_pos ()) } 
 	| AND lvalue %prec NOT {Reduct(And, $2, Parsing.symbol_start_pos ()) } /* reductions */
 	| OR lvalue %prec NOT {Reduct(Or, $2, Parsing.symbol_start_pos ()) }
 	| XOR lvalue %prec NOT {Reduct(Xor, $2, Parsing.symbol_start_pos ()) }
@@ -192,7 +194,7 @@ expr:
 	| XNOR lvalue %prec NOT {Reduct(Xnor, $2, Parsing.symbol_start_pos ()) }
 	| RESET { Reset(Parsing.symbol_start_pos ()) }
 	| CONCAT LPAREN concat_list RPAREN { Concat(List.rev $3, Parsing.symbol_start_pos ()) } /* Concatenation */
-	| ID LPAREN binding_list_opt SEMICOLON binding_list_opt RPAREN { Inst($1, List.rev $3, List.rev $5, Parsing.symbol_start_pos ()) } /*Module instantiation */
+	| ID LPAREN binding_in_list_opt SEMICOLON binding_out_list_opt RPAREN SEMICOLON { Inst($1, List.rev $3, List.rev $5, Parsing.symbol_start_pos ()) } /*Module instantiation */
 
 expr_opt:
 		/* nothing */ { Noexpr(Parsing.symbol_start_pos ()) }
@@ -209,14 +211,26 @@ concat_item:
 	| DLIT LBRACE BLIT RBRACE { ConcatBLiteral($1, $3) } /* duplicated blit */
 	| DLIT LBRACE lvalue RBRACE { ConcatLvalue($1, $3) } /* duplicated lvalue */
  
-binding_list:
-	binding { [$1] }
-	| binding_list COMMA binding { $3 :: $1 }
+binding_in_list:
+	binding_in { [$1] }
+	| binding_in_list COMMA binding_in { $3 :: $1 }
 	| error { raise (Parse_Failure("Port binding error." , Parsing.symbol_start_pos () )) }
 
-binding_list_opt:
+binding_in_list_opt:
 	/*nothing*/ { [] }
-	| binding_list { $1 }
+	| binding_in_list { $1 }
+		
+binding_out_list:
+	binding_out { [$1] }
+	| binding_out_list COMMA binding_out { $3 :: $1 }
+	| error { raise (Parse_Failure("Port binding error." , Parsing.symbol_start_pos () )) }
 
-binding:
-		lvalue ASSIGN expr { $1, $3 }		
+binding_out_list_opt:
+	/*nothing*/ { [] }
+	| binding_out_list { $1 }
+
+binding_in:
+		lvalue ASSIGN expr { $1, $3 }
+
+binding_out:
+		lvalue ASSIGN lvalue { $1, $3 }		

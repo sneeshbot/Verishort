@@ -27,8 +27,7 @@ rule token = parse
 	| ';' { SEMICOLON } 
   | ',' { COMMA }
 	| ':' { COLON }
-	| '-'['0' - '9']+  as var { DLIT( int_of_string var )  } (* Literals *)
-	| '+'?['0' - '9']+  as var { DLIT( int_of_string var )  } (* Literals *)
+	| ['0' - '9']+  as var { DLIT( int_of_string var )  } (* Literals *)
 	| ['0' '1']+ 'b' as var { BLIT (String.sub var 0 (String.length var - 1) )  }
 	| ['0' '1' 'x']+ 'b' as var { XLIT(String.sub var 0 (String.length var - 1)) } 
 	| '+'  { PLUS }  (* Operators *) 

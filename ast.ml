@@ -1,4 +1,4 @@
-type op = Plus | Minus | Multiply | Modulus | Eq | Ne | Ge | Gt | Le | Lt | And | Or | Xor | Nand | Nor | Xnor | Lshift | Rshift
+type op = Plus | Minus | Multiply | Modulus | Eq | Ne | Ge | Gt | Le | Lt | And | Or | Xor | Nand | Nor | Xnor | Lshift | Rshift | Not
 
 type parameter = string * int * Lexing.position
 
@@ -7,12 +7,11 @@ type expr =
   | BLiteral of string  * Lexing.position
   | Lvalue of lvalue  * Lexing.position
   | Binop of expr * op * expr * Lexing.position
-  | Assign of lvalue * expr * Lexing.position
   | Signext of int * expr * Lexing.position
   | Reduct of op * lvalue * Lexing.position
-  | Not of expr * Lexing.position
+  | Unary of op * expr * Lexing.position
   | Concat of concat_item list * Lexing.position
-  | Inst of string * binding list * binding list * Lexing.position
+	| Inst of string * binding_in list * binding_out list * Lexing.position
   | Reset of Lexing.position
   | Noexpr of Lexing.position
 and concat_item = 
@@ -22,7 +21,8 @@ and lvalue =
     Identifier of string
   | Subscript of string * expr
   | Range of string * expr * expr
-and binding = lvalue * expr
+and binding_in = lvalue * expr
+and binding_out = lvalue * lvalue
 
 type condition = Posedge | Negedge | Expression of expr
 
@@ -34,6 +34,7 @@ type statement =
   | Case of lvalue * case_item list * Lexing.position
   | Return of expr * Lexing.position
   | For of expr * expr * expr * statement * Lexing.position
+  | Assign of lvalue * expr * Lexing.position
 
 and case_item = string * statement * Lexing.position
 
