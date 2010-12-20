@@ -405,7 +405,7 @@ let rec translate_stmt environ immod vshstmt count in_always = match vshstmt
 											  (immod2, stmtlst1 @ stmtlst2, count2)) (immod, [], count) lst
   | If(cond, stmt1, stmt2, _) -> 
   | Case(lvalue, lst, _) ->
-  | Return(expr, pos) -> translate_stmt environ immod Assign("return", expr, pos) count in_always 
+  | Return(expr, pos) -> translate_stmt environ immod Assign(Identifier("return"), expr, pos) count in_always 
   | For(init, cond, incr, stmt, _) -> 
 	| Assign(lvalue, expr, pos) ->
   
