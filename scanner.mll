@@ -33,7 +33,6 @@ rule token = parse
 	| '+'  { PLUS }  (* Operators *) 
 	| '-'  { MINUS }
 	| '*'  { MULTIPLY }
-	| '/'  { DIVIDE }
 	| '%'  { MODULUS }
 	| "<<" { LSHIFT }
 	| ">>" { RSHIFT }

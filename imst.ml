@@ -1,6 +1,6 @@
 open Int64
 
-type im_op = ImPlus | ImMinus | ImMultiply | ImModulus | ImEq | ImNe | ImGe | ImLe | ImLt | ImAnd | ImOr | ImXor | ImNand | ImNor | ImXnor | ImLshift | ImRshift | ImNot
+type im_op = ImPlus | ImMinus | ImMultiply | ImModulus | ImEq | ImNe | ImGe | ImLe | ImLt | ImGt | ImAnd | ImOr | ImXor | ImNand | ImNor | ImXnor | ImLshift | ImRshift | ImNot
 
 type im_literal = int64 * int
 
@@ -44,7 +44,7 @@ type im_mod_decl = {
     im_outputs : (string * int) list;
     im_declarations : im_decl list;
     im_assignments : im_assignment list;
-    im_instantiations : im_instantiations list;
+    im_instantiations : im_instantiation list;
     im_alwaysall : im_always_stmt list;
 		im_alwaysposedge : im_always_stmt list;
 		im_alwaysnegedge : im_always_stmt list;

@@ -60,11 +60,10 @@ let rec eval_expr mod_name env = function
         Identifier(id) -> (try Int64.of_int(get_param mod_name id env) 
                          with Not_found -> raise (Parse_Failure("Expression cannot be evaluated at compile time.", pos)))
       | _ -> raise (Parse_Failure("Expression cannot be evaluated at compile time.", pos)))
-  | Binop(e1, op, e2, _) -> (match op with
+  | Binop(e1, op, e2, pos) -> (match op with
       Plus -> Int64.add (eval_expr mod_name env e1) (eval_expr mod_name env e2) 
     | Minus -> Int64.sub (eval_expr mod_name env e1) (eval_expr mod_name env e2)
-    | Multiply -> Int64.mul (eval_expr mod_name env e1) (eval_expr mod_name env e2) 
-    | Divide -> Int64.div (eval_expr mod_name env e1) (eval_expr mod_name env e2) 
+    | Multiply -> Int64.mul (eval_expr mod_name env e1) (eval_expr mod_name env e2)
     | Modulus -> Int64.rem (eval_expr mod_name env e1) (eval_expr mod_name env e2)  
     | Eq -> if (Int64.compare (eval_expr mod_name env e1) (eval_expr mod_name env e2)) = 0 then Int64.one else Int64.zero
     | Ne -> if (Int64.compare (eval_expr mod_name env e1) (eval_expr mod_name env e2)) <> 0 then Int64.one else Int64.zero
@@ -80,11 +79,11 @@ let rec eval_expr mod_name env = function
     | Xnor -> Int64.lognot (Int64.logxor (eval_expr mod_name env e1) (eval_expr mod_name env e2))
     | Lshift -> Int64.shift_left (eval_expr mod_name env e1) (Int64.to_int (eval_expr mod_name env e2))
     | Rshift -> Int64.shift_right (eval_expr mod_name env e1) (Int64.to_int (eval_expr mod_name env e2)) (*arithmetic shift - keep sign*)
+		| Not -> raise (Parse_Failure("Internal compiler error 003: contact manufacturer for assistance.", pos))
   )
-  | Assign(_, _, pos) -> raise (Parse_Failure("Assignment cannot be used in the current context.", pos))
   | Signext(_, _, pos) -> raise (Parse_Failure("Sign extension cannot be used in the current context.", pos))
   | Reduct(_, _, pos) -> raise (Parse_Failure("Expression cannot be evaluated at compile time.", pos))
-  | Unary (op, exp, _) -> (match op with
+  | Unary (op, exp, pos) -> (match op with
 		| Not -> Int64.lognot (eval_expr mod_name env exp)
 		| Plus -> (eval_expr mod_name env exp)
 		| Minus -> Int64.neg (eval_expr mod_name env exp)
@@ -106,7 +105,7 @@ let check_mod_info lst1 mods =
   List.fold_left (fun lst mod1 -> if List.mem mod1.modname lst then raise (Parse_Failure("Duplicate module name." , mod1.modpos)) else if mod1.returnwidth < 0 then raise (Parse_Failure("Invalid return width.", mod1.modpos)) else mod1.modname :: lst) lst1 mods
   
 let check_unique_ids_in_module env mod1 =
-	let name = mod1.modname in
+	let mod_name = mod1.modname in
   let inputslist = List.fold_left (fun lst2 (name, width, pos)  -> (* each input *)
       if List.mem name lst2 
       then raise (Parse_Failure ("Duplicate identifier.", pos)) 
@@ -142,17 +141,17 @@ let rec get_arg_tuple name lst =
       [] -> raise Not_found
     | (s, i, _)::tl -> if s = name then (s,i) else get_arg_tuple name tl 
 
-let get_arg mod_name output_name env = 
+let get_arg mod_name arg_name env = 
   let tuples = StringMap.find mod_name env.arg_map in
   get_arg_tuple arg_name (fst tuples @ snd tuples)
 
-let get_input mod_name output_name env =
+let get_input mod_name input_name env =
   let tuples = StringMap.find mod_name env.arg_map in
-  get_arg_tuple arg_name (fst tuples)
+  get_arg_tuple input_name (fst tuples)
 
 let get_output mod_name output_name env =
   let tuples = StringMap.find mod_name env.arg_map in
-  get_arg_tuple arg_name (snd tuples)
+  get_arg_tuple output_name (snd tuples)
 
 let rec get_local_tuple name lst =
   match lst with
@@ -162,7 +161,7 @@ let rec get_local_tuple name lst =
 let rec get_local_decl name lst =
   match lst with
       [] -> raise Not_found
-    | hd::tl -> if hd.declname = name then hd else get_local_all name tl
+    | hd::tl -> if hd.declname = name then hd else get_local_decl name tl
 
 let get_local_all mod_name local_name env =
 	get_local_decl local_name (StringMap.find mod_name env.local_map)
@@ -180,11 +179,25 @@ let check_valid_lvalue environ mod_name lvalue_id pos =
   (* arg map, local map *)
   try get_arg mod_name lvalue_id environ
   with Not_found -> try get_local mod_name lvalue_id environ with Not_found -> raise (Parse_Failure("Undefined identifier.", pos))
-  
+ 
 let check_assignment_lvalue environ mod_name lvalue_id pos = 
   (* arg map, local map *)
   try get_output mod_name lvalue_id environ
   with Not_found -> try get_local mod_name lvalue_id environ with Not_found -> raise (Parse_Failure("Undefined identifier.", pos))
+
+let to_im_lvalue environ immod lval pos = match lval with
+   Identifier(i) ->  ImRange(fst (check_valid_lvalue environ immod.im_modname i pos), snd (check_valid_lvalue environ immod.im_modname i pos) - 1, 0)
+ | Subscript(s, expr) -> 
+     let (id, width) = check_valid_lvalue environ immod.im_modname s pos in
+     let subscr = Int64.to_int (eval_expr immod.im_modname environ expr) in
+     if subscr < 0 || subscr >= width then raise (Parse_Failure("Bus index out of bounds.", pos)) else ImSubscript(id, subscr)
+ | Range(r, expr1, expr2) ->
+     let (id, width) = check_valid_lvalue environ immod.im_modname r pos in
+     let subscr1 = Int64.to_int (eval_expr immod.im_modname environ expr1) in
+     let subscr2 = Int64.to_int (eval_expr immod.im_modname environ expr2) in
+     if subscr1 < 0 || subscr2 < 0|| subscr1 >= width || subscr2 >= width then raise (Parse_Failure("Bus index out of bounds.", pos)) 
+     else if subscr1 < subscr2 then raise (Parse_Failure("Bus ranges must be specified from most significant to least significant.", pos))
+     else ImRange(id, subscr1, subscr2)
 
 let get_lvalue_length environ immod lvalue pos = match (to_im_lvalue environ immod lvalue pos) with
   	  ImSubscript(_, _) -> 1
@@ -200,49 +213,37 @@ let get_lvalue_bit_range environ immod lvalue pos = match (to_im_lvalue environ 
   	| ImRange(_, upper, lower) -> (upper, lower)
 
 let to_im_op = function
-    Plus -> ImPlus  | Minus -> ImMinus  | Multiply -> ImMultiply | Divide -> ImDivide  
+    Plus -> ImPlus  | Minus -> ImMinus  | Multiply -> ImMultiply | Gt -> ImGt
   | Modulus -> ImModulus  | Eq -> ImEq  | Ne -> ImNe | Ge -> ImGe  | Le -> ImLe  
   | Lt -> ImLt  | And -> ImAnd | Or -> ImOr | Xor -> ImXor | Nand -> ImNand 
   | Nor -> ImNor | Xnor -> ImXnor | Lshift -> ImLshift | Rshift -> ImRshift | Not -> ImNot
-  
-let to_im_lvalue environ immod lval pos = match l with
-   Identifier(i) ->  ImRange(fst (check_valid_lvalue environ immod.im_modname i pos), snd (check_valid_lvalue environ immod.im_modname i pos) - 1, 0)
- | Subscript(s, expr) -> 
-     let (id, width) = check_valid_lvalue environ immod.im_modname s pos in
-     let subscr = Int64.to_int (eval_expr expr) in
-     if subscr < 0 || subscr >= width then raise (Parse_Failure("Bus index out of bounds.", pos)) else ImSubscript(id, subscr)
- | Range(r, expr1, expr2) ->
-     let (id, width) = check_valid_lvalue environ immod.im_modname s pos in
-     let subscr1 = Int64.to_int (eval_expr expr1) in
-     let subscr2 = Int64.to_int (eval_expr expr2) in
-     if subscr1 < 0 || subscr2 < 0|| subscr1 >= width || subscr2 >= width then raise (Parse_Failure("Bus index out of bounds.", pos)) 
-     else if subscr1 < subscr2 then raise (Parse_Failure("Bus ranges must be specified from most significant to least significant."))
-     else ImRange( id, subscr1, subscr2)
+ 
 
 let rec get_max_bit_width_expr environ immod expr = match expr with
     DLiteral(d, _) -> 64
   | BLiteral(b, _) -> String.length b
-  | Lvalue(l, pos) -> get_lvalue_length environ immod.mod_name l pos
-  | Binop(e1, op, e2, _) -> match op with
-      Plus -> max (get_max_bit_width_expr e1) (get_max_bit_width_expr e2)
-    | Minus -> max (get_max_bit_width_expr e1) (get_max_bit_width_expr e2)
-    | Multiply -> (get_max_bit_width_expr e1) + (get_max_bit_width_expr e2) - 1
-    | Modulus -> get_max_bit_width_expr e2
+  | Lvalue(l, pos) -> get_lvalue_length environ immod l pos
+  | Binop(e1, op, e2, pos) -> (match op with
+      Plus -> max (get_max_bit_width_expr environ immod  e1) (get_max_bit_width_expr environ immod e2)
+    | Minus -> max (get_max_bit_width_expr environ immod  e1) (get_max_bit_width_expr environ immod e2)
+    | Multiply -> (get_max_bit_width_expr environ immod  e1) + (get_max_bit_width_expr environ immod e2) - 1
+    | Modulus -> get_max_bit_width_expr environ immod e2
     | Eq -> 1 | Ne -> 1 | Ge -> 1 | Gt -> 1 | Le -> 1 | Lt -> 1
-    | And -> max (get_max_bit_width_expr e1) (get_max_bit_width_expr e2)
-    | Or -> max (get_max_bit_width_expr e1) (get_max_bit_width_expr e2)
-    | Xor -> max (get_max_bit_width_expr e1) (get_max_bit_width_expr e2)
-    | Nand -> max (get_max_bit_width_expr e1) (get_max_bit_width_expr e2)
-    | Nor -> max (get_max_bit_width_expr e1) (get_max_bit_width_expr e2)
-    | Xnor -> max (get_max_bit_width_expr e1) (get_max_bit_width_expr e2)
-    | Lshift -> get_max_bit_width_expr e1 | Rshift -> get_max_bit_width_expr e1
+    | And -> max (get_max_bit_width_expr environ immod e1) (get_max_bit_width_expr environ immod e2)
+    | Or -> max (get_max_bit_width_expr environ immod e1) (get_max_bit_width_expr environ immod e2)
+    | Xor -> max (get_max_bit_width_expr environ immod e1) (get_max_bit_width_expr environ immod e2)
+    | Nand -> max (get_max_bit_width_expr environ immod e1) (get_max_bit_width_expr environ immod e2)
+    | Nor -> max (get_max_bit_width_expr environ immod e1) (get_max_bit_width_expr environ immod e2)
+    | Xnor -> max (get_max_bit_width_expr environ immod e1) (get_max_bit_width_expr environ immod e2)
+    | Lshift -> get_max_bit_width_expr environ immod e1 | Rshift -> get_max_bit_width_expr environ immod e1
+		| Not -> raise (Parse_Failure("Internal compiler error 003: contact manufacturer for assistance.", pos)))
   | Signext(bits, expr, _) -> bits
   | Reduct(op, lvalue, _) -> 1
-  | Unary(_, expr, _) -> get_max_bit_width_expr expr
+  | Unary(_, expr, _) -> get_max_bit_width_expr environ immod expr
   | Concat(lst, pos) -> List.fold_left (fun orig x -> (match x with
   	   ConcatBLiteral(time, lit) -> orig + time * (String.length lit)
-  	 | ConcatLvalue(time, lvalue) -> orig + time * (get_lvalue_length environ immod.mod_name lvalue pos))) 0 lst
-  | Inst(str, bindlst1, bindlst2, pos) -> (try StringMap.find str env.return_map 
+  	 | ConcatLvalue(time, lvalue) -> orig + time * (get_lvalue_length environ immod lvalue pos))) 0 lst
+  | Inst(str, bindlst1, bindlst2, pos) -> (try StringMap.find str environ.return_map 
   	with Not_found -> raise (Parse_Failure("Undefined module name.", pos)))
   | Reset(_) -> 1
   | Noexpr(_) -> 0
@@ -250,27 +251,28 @@ let rec get_max_bit_width_expr environ immod expr = match expr with
 let rec get_min_bit_width_expr environ immod expr = match expr with
     DLiteral(d, _) -> get_min_bit_width (Int64.of_int d)
   | BLiteral(b, _) -> String.length b
-  | Lvalue(l, pos) -> get_lvalue_length environ immod.mod_name l pos
-  | Binop(e1, op, e2, _) -> match op with
-      Plus -> max (get_min_bit_width_expr e1) (get_min_bit_width_expr e2)
-    | Minus -> max (get_min_bit_width_expr e1) (get_min_bit_width_expr e2)
-    | Multiply -> (get_min_bit_width_expr e1) + (get_min_bit_width_expr e2) - 1
-    | Modulus -> get_min_bit_width_expr e2
+  | Lvalue(l, pos) -> get_lvalue_length environ immod l pos
+  | Binop(e1, op, e2, pos) -> (match op with
+      Plus -> max (get_min_bit_width_expr environ immod e1) (get_min_bit_width_expr environ immod e2)
+    | Minus -> max (get_min_bit_width_expr environ immod e1) (get_min_bit_width_expr environ immod e2)
+    | Multiply -> (get_min_bit_width_expr environ immod e1) + (get_min_bit_width_expr environ immod e2) - 1
+    | Modulus -> get_min_bit_width_expr environ immod e2
     | Eq -> 1 | Ne -> 1 | Ge -> 1 | Gt -> 1 | Le -> 1 | Lt -> 1
-    | And -> max (get_min_bit_width_expr e1) (get_min_bit_width_expr e2)
-    | Or -> max (get_min_bit_width_expr e1) (get_min_bit_width_expr e2)
-    | Xor -> max (get_min_bit_width_expr e1) (get_min_bit_width_expr e2)
-    | Nand -> max (get_min_bit_width_expr e1) (get_min_bit_width_expr e2)
-    | Nor -> max (get_min_bit_width_expr e1) (get_min_bit_width_expr e2)
-    | Xnor -> max (get_min_bit_width_expr e1) (get_min_bit_width_expr e2)
-    | Lshift -> get_min_bit_width_expr e1 | Rshift -> get_min_bit_width_expr e1
+    | And -> max (get_min_bit_width_expr environ immod e1) (get_min_bit_width_expr environ immod e2)
+    | Or -> max (get_min_bit_width_expr environ immod e1) (get_min_bit_width_expr environ immod e2)
+    | Xor -> max (get_min_bit_width_expr environ immod e1) (get_min_bit_width_expr environ immod e2)
+    | Nand -> max (get_min_bit_width_expr environ immod e1) (get_min_bit_width_expr environ immod e2)
+    | Nor -> max (get_min_bit_width_expr environ immod e1) (get_min_bit_width_expr environ immod e2)
+    | Xnor -> max (get_min_bit_width_expr environ immod e1) (get_min_bit_width_expr environ immod e2)
+    | Lshift -> get_min_bit_width_expr environ immod e1 | Rshift -> get_min_bit_width_expr environ immod e1
+		| Not -> raise (Parse_Failure("Internal compiler error 003: contact manufacturer for assistance.", pos)))
   | Signext(bits, expr, _) -> bits
   | Reduct(op, lvalue, _) -> 1
-  | Unary(_, expr, _) -> get_min_bit_width_expr expr
+  | Unary(_, expr, _) -> get_min_bit_width_expr environ immod expr
   | Concat(lst, pos) -> List.fold_left (fun orig x -> (match x with
   	   ConcatBLiteral(time, lit) -> orig + time * (String.length lit)
-  	 | ConcatLvalue(time, lvalue) -> orig + time * (get_lvalue_min_length environ immod.mod_name lvalue pos))) 0 lst
-  | Inst(str, bindlst1, bindlst2, pos) -> (try StringMap.find str env.return_map 
+  	 | ConcatLvalue(time, lvalue) -> orig + time * (get_lvalue_length environ immod lvalue pos))) 0 lst
+  | Inst(str, bindlst1, bindlst2, pos) -> (try StringMap.find str environ.return_map 
   	with Not_found -> raise (Parse_Failure("Undefined module name.", pos)))
   | Reset(_) -> 1
   | Noexpr(_) -> 0
@@ -279,7 +281,7 @@ let rec get_min_bit_width_expr environ immod expr = match expr with
 (* Translate an AST expression into an IM expression *)
 let rec translate_expr environ immod expr count in_conditional = match expr with
     DLiteral(d, _) -> (immod, ImLiteral(Int64.of_int d, get_min_bit_width (Int64.of_int d)), count)
-  | BLiteral(b, _) -> (immod, ImLiteral((try 
+  | BLiteral(b, pos) -> (immod, ImLiteral((try 
               if b.[0] = '0' then Int64.of_string ("0b" ^ b) 
               else Int64.neg (Int64.of_string ("0b"^(add_one (invert_binary b))))
               with Failure(_) -> raise (Parse_Failure("Binary literals may not exceed 64 bits", pos))), String.length b), count)
@@ -296,17 +298,17 @@ let rec translate_expr environ immod expr count in_conditional = match expr with
 		ImConcat([ImConcatLvalue(bits - width, ImSubscript("_im_" ^ (string_of_int count1), width - 1));
 		          ImConcatLvalue(1, ImRange("_im_" ^ (string_of_int count1), width - 1, 0))]), count + 1)
   | Reduct(op, lvalue, pos) -> (immod, ImReduct(to_im_op op, to_im_lvalue environ immod lvalue pos), count)
-  | Unary(op, expr, _) -> let (immod1, imexp1, count1) = translate_expr environ immod expr in_conditional in (immod1, ImUnary(to_im_op op, imexp1), count1)
-  | Concat(lst, pos) ->  (immod, ImConcat(List.map (fun x -> match x with
-						ConcatBLiteral(time, lit) -> if time <= 0 then raise (Parse_Failure("Replication must be at least one time.", pos)) elselit
+  | Unary(op, expr, _) -> let (immod1, imexp1, count1) = translate_expr environ immod expr count in_conditional in (immod1, ImUnary(to_im_op op, imexp1), count1)
+  | Concat(lst, pos) -> (immod, ImConcat(List.map (fun x -> match x with
+						ConcatBLiteral(time, lit) -> if time <= 0 then raise (Parse_Failure("Replication must be at least one time.", pos)) else
 							ImConcatLit(time, ((try 
               if lit.[0] = '0' then Int64.of_string ("0b" ^ lit) 
               else Int64.neg (Int64.of_string ("0b"^(add_one (invert_binary lit))))
               with Failure(_) -> raise (Parse_Failure("Binary literals may not exceed 64 bits", pos))), String.length lit))
-					| ConcatLvalue(time, lvalue) -> if time <= 0 then raise (Parse_Failure("Replication must be at least one time.", pos)) elselit
+					| ConcatLvalue(time, lvalue) -> if time <= 0 then raise (Parse_Failure("Replication must be at least one time.", pos)) else
 					    ImConcatLvalue(time, to_im_lvalue environ immod lvalue pos)) lst), count)
-  | Reset(_) -> ImLvalue(ImRange("reset", 0, 0))
-  | Noexpr(_) -> ImNoexpr
+  | Reset(_) -> (immod, ImLvalue(ImRange("reset", 0, 0)), count)
+  | Noexpr(_) -> (immod, ImNoexpr, count)
 	| Inst(othermod, bindlst1, bindlst2, pos) -> if in_conditional then raise (Parse_Failure("Modules may not be instantiated inside conditional blocks.", pos)) else
 		( 
 		(* Check bindings *)
@@ -323,14 +325,14 @@ let rec translate_expr environ immod expr count in_conditional = match expr with
 				(* Add binding between "return" port and the new bus. *)
 				let new_bus_name = "_imexp_" ^ (string_of_int count2) in 
 			  let new_bindings_out = (ImRange("return", returnwidth-1, 0), ImLvalue(ImRange(new_bus_name, returnwidth - 1, 0))) :: converted_bindings_out in
-				( { immod2 with im_instantiations = (othermod, converted_bindings_in, new_bindings_out) :: immod2.im_instantations;
+				( { immod2 with im_instantiations = (othermod, converted_bindings_in, new_bindings_out) :: immod2.im_instantiations;
 				                im_declarations = (ImWire, new_bus_name, returnwidth) :: immod2.im_declarations; },
 												ImLvalue(ImRange(new_bus_name, returnwidth-1, 0)), count2 + 1)
-		with Not_Found -> raise (Parse_Failure("Undefined module name.", pos))
+		with Not_found -> raise (Parse_Failure("Undefined module name.", pos))
 		)	
 and add_param_pos startpos endpos paramname lst pos = if startpos < endpos then lst 
           else let newparamplace = paramname ^ (string_of_int startpos) in 
-               if List.mem newparamplace lst then raise Parse_Failure("Duplicate binding.", pos)
+               if List.mem newparamplace lst then raise (Parse_Failure("Duplicate binding.", pos))
                else add_param_pos (startpos - 1) endpos paramname (newparamplace::lst) pos
 							
 (* convert_bindings_in: env -> int -> im_moddecl -> string -> binding_in list -> im_moddecl * int * im_assignment list *)
@@ -341,26 +343,26 @@ and convert_bindings_in environ count immod othermod bindlst pos in_conditional 
 	let (immod1, count1, list1, _) = (List.fold_left (fun (mod1, cnt1, bnd1, lst1) (lval1, exp1) -> (match lval1 with
 		  Identifier(name) -> let (_, width) = get_input othermod name environ in
 		                      let lst2 = add_param_pos (width - 1) 0 name lst1 pos in
-													if width < get_min_bit_width exp1 then raise (Parse_Failure("Binding width mismatch.", pos))
-													else if width > get_max_bit_width exp1 then raise (Parse_Failure("Binding width mismatch.", pos))
+													if width < get_min_bit_width_expr environ immod exp1 then raise (Parse_Failure("Binding width mismatch.", pos))
+													else if width > get_max_bit_width_expr environ immod exp1 then raise (Parse_Failure("Binding width mismatch.", pos))
 													else let (mod2, exp2, cnt2) = translate_expr environ mod1 exp1 cnt1 in_conditional in
 													(mod2, cnt2, (ImRange(name, width - 1, 0), exp2) :: bnd1, lst2)
 		| Subscript(name, exp) -> let (_, width) = get_input othermod name environ in
-													let index = eval_expr mod1.im_modname environ exp in
+													let index = Int64.to_int (eval_expr mod1.im_modname environ exp) in
 													if index < 0 || index >= width then raise (Parse_Failure("Index out of range.", pos)) else
 		                      let lst2 = add_param_pos index index name lst1 pos in
-													if get_min_bit_width exp1 > 1 then raise (Parse_Failure("Binding width mismatch.", pos))
-													else if get_max_bit_width exp1 < 1 then raise (Parse_Failure("Binding width mismatch.", pos))
+													if get_min_bit_width_expr environ immod exp1 > 1 then raise (Parse_Failure("Binding width mismatch.", pos))
+													else if get_max_bit_width_expr environ immod exp1 < 1 then raise (Parse_Failure("Binding width mismatch.", pos))
 													else let (mod2, exp2, cnt2) = translate_expr environ mod1 exp1 cnt1 in_conditional in
 													(mod2, cnt2, (ImSubscript(name, index), exp2) :: bnd1, lst2)
 		| Range(name, e1, e2) -> let (_, width) = get_input othermod name environ in
-													let startindex = eval_expr mod1.im_modname environ e1 in
-													let endindex = eval_expr mod1.im_modname environ e2 in
+													let startindex = Int64.to_int (eval_expr mod1.im_modname environ e1) in
+													let endindex = Int64.to_int (eval_expr mod1.im_modname environ e2) in
 													if startindex < 0 || endindex >= width || startindex < endindex then
 														raise (Parse_Failure("Index out of range or invalid index.", pos)) else
-		                      let lst2 = add_param_pos name startindex endindex name lst1 pos in
-													if get_min_bit_width exp1 > (startindex - endindex + 1) then raise (Parse_Failure("Binding width mismatch.", pos))
-													else if get_max_bit_width exp1 < (startindex - endindex + 1) then raise (Parse_Failure("Binding width mismatch.", pos))
+		                      let lst2 = add_param_pos startindex endindex name lst1 pos in
+													if get_min_bit_width_expr environ immod exp1 > (startindex - endindex + 1) then raise (Parse_Failure("Binding width mismatch.", pos))
+													else if get_max_bit_width_expr environ immod exp1 < (startindex - endindex + 1) then raise (Parse_Failure("Binding width mismatch.", pos))
 													else let (mod2, exp2, cnt2) = translate_expr environ mod1 exp1 cnt1 in_conditional in
 													(mod2, cnt2, (ImRange(name, startindex, endindex), exp2) :: bnd1, lst2)))
 	  (immod, count, [], []) bindlst) in (immod1, count1, list1)
@@ -369,38 +371,37 @@ and convert_bindings_in environ count immod othermod bindlst pos in_conditional 
 (* Check: no duplicate bindings to ports (but partial binding is OK, and do not have to bind anything). *)
 (* Note that duplicate assignments to wires will result in undefined behavior. *)
 (* Check that the target of the assignment is a wire - "binding" a reg to an output does not make any sense. *)
-and convert_bindings_out environ in_always count immod othermod bindlst pos =
+and convert_bindings_out environ count immod othermod bindlst pos =
 	let (immod1, count1, list1 , _) = (List.fold_left (fun (mod1, cnt1, bnd1, lst1) (lval1, lval2) -> 
 		try (
-		let result = get_local_all immod.mod_name (get_lvalue_name lval2) environ in
-		if result.decltype = Reg then raise (Parse_Failure("Cannot bind output port to registers.", pos)) else 
-		let exp1 = ImLvalue(lval2) in
+		(try
+			let result = get_local_all immod.im_modname (get_lvalue_name lval2) environ in
+		  if result.decltype = Reg then raise (Parse_Failure("Cannot bind output port to registers.", pos)) else ()
+		with Not_found -> ignore (get_output immod.im_modname (get_lvalue_name lval2) environ)); 
+		let exp1 = Lvalue(lval2, Lexing.dummy_pos) in
 		match lval1 with
 		  Identifier(name) -> let (_, width) = get_output othermod name environ in
 		                      let lst2 = add_param_pos (width - 1) 0 name lst1 pos in
-													if width < get_min_bit_width exp1 then raise (Parse_Failure("Binding width mismatch.", pos))
-													else if width > get_max_bit_width exp1 then raise (Parse_Failure("Binding width mismatch.", pos))
+													if width <> get_min_bit_width_expr environ immod exp1 then raise (Parse_Failure("Binding width mismatch.", pos))
 													else let (mod2, exp2, cnt2) = translate_expr environ mod1 exp1 cnt1 false in
 													(mod2, cnt2, (ImRange(name, width - 1, 0), exp2) :: bnd1, lst2)
 		| Subscript(name, exp) -> let (_, width) = get_output othermod name environ in
-													let index = eval_expr mod1.im_modname environ exp in
+													let index = Int64.to_int (eval_expr mod1.im_modname environ exp) in
 													if index < 0 || index >= width then raise (Parse_Failure("Index out of range.", pos)) else
-		                      let lst2 = add_param_pos  index index name lst1 pos in
-													if get_min_bit_width exp1 > 1 then raise (Parse_Failure("Binding width mismatch.", pos))
-													else if get_max_bit_width exp1 < 1 then raise (Parse_Failure("Binding width mismatch.", pos))
+		                      let lst2 = add_param_pos index index name lst1 pos in
+													if get_min_bit_width_expr environ immod exp1 <> 1 then raise (Parse_Failure("Binding width mismatch.", pos))
 													else let (mod2, exp2, cnt2) = translate_expr environ mod1 exp1 cnt1 false in
 													(mod2, cnt2, (ImSubscript(name, index), exp2) :: bnd1, lst2)
 		| Range(name, e1, e2) -> let (_, width) = get_output othermod name environ in
-													let startindex = eval_expr mod1.im_modname environ e1 in
-													let endindex = eval_expr mod1.im_modname environ e1 in
+													let startindex = Int64.to_int (eval_expr mod1.im_modname environ e1) in
+													let endindex = Int64.to_int (eval_expr mod1.im_modname environ e2) in
 													if startindex < 0 || endindex >= width || startindex < endindex then
 														raise (Parse_Failure("Index out of range or invalid index.", pos)) else
 		                      let lst2 = add_param_pos startindex endindex name lst1 pos in
-													if get_min_bit_width exp1 > (startindex - endindex + 1) then raise (Parse_Failure("Binding width mismatch.", pos))
-													else if get_max_bit_width exp1 < (startindex - endindex + 1) then raise (Parse_Failure("Binding width mismatch.", pos))
+													if get_min_bit_width_expr environ immod exp1 <> (startindex - endindex + 1) then raise (Parse_Failure("Binding width mismatch.", pos))
 													else let (mod2, exp2, cnt2) = translate_expr environ mod1 exp1 cnt1 false in
 													(mod2, cnt2, (ImRange(name, startindex, endindex), exp2) :: bnd1, lst2))
-		with Not_Found -> raise (Parse_Failure("Undefined identifier.", pos))) 
+		with Not_found -> raise (Parse_Failure("Undefined identifier.", pos)))
 	  (immod, count, [], []) bindlst) in (immod1, count1, list1)
 
 
@@ -410,7 +411,7 @@ and convert_bindings_out environ in_always count immod othermod bindlst pos =
 (* generated is returned through modification to the im_moddecl directly. *)
 (* Otherwise, it is returned in the list for incorporation by a top-level statement *)
 let rec translate_stmt environ immod vshstmt count in_always = match vshstmt
-    with Nop -> (immod, [], count)
+    with Nop(_) -> (immod, [], count)
   | Expr(expr, _) -> let (immod1, _, count1) = translate_expr environ immod expr count in_always in (immod1, [], count1) 
   | Block(lst, _) -> List.fold_left (fun (immod1, stmtlst1, count1) stmt -> 
 		                    let (immod2, stmtlst2, count2) = translate_stmt environ immod1 stmt count1 in_always in
@@ -420,8 +421,8 @@ let rec translate_stmt environ immod vshstmt count in_always = match vshstmt
 																			Posedge -> let (immod1, stmtlist1, count1) = translate_stmt environ immod stmt1 count true in
 																								 ( { immod1 with im_alwaysposedge = immod1.im_alwaysposedge @ stmtlist1 }, [], count1 )
 																		| Negedge -> let (immod1, stmtlist1, count1) = translate_stmt environ immod stmt1 count true in
-																								 ( { immod1 with im_alwaysnegdege = immod1.im_alwaysposedge @ stmtlist1 }, [], count1 ) 
-																		| Expression(exp) -> if in_always then 
+																								 ( { immod1 with im_alwaysnegedge = immod1.im_alwaysnegedge @ stmtlist1 }, [], count1 ) 
+																		| Expression(expr) -> if in_always then 
 																			(  let (immod1, stmtlist1, count1) = translate_stmt environ immod stmt1 count true in
 																			   let (immod2, stmtlist2, count2) = translate_stmt environ immod1 stmt2 count1 true in
 																			   let (immod3, imexpr, count3) = translate_expr environ immod2 expr count true in
@@ -432,16 +433,16 @@ let rec translate_stmt environ immod vshstmt count in_always = match vshstmt
 																			   let (immod3, imexpr, count3) = translate_expr environ immod2 expr count false in
 																			   ( {immod3 with im_alwaysall = ImIf(imexpr, stmtlist1, stmtlist2) :: immod3.im_alwaysall}, [], count3)
 																		)
-  | Return(expr, pos) -> translate_stmt environ immod Assign(Identifier("return"), expr, pos) count in_always
-	| Case(lvalue, lst, _) -> let width = get_max_bit_width_expr environ immod Lvalue(lvalue) in
+  | Return(expr, pos) -> translate_stmt environ immod (Assign(Identifier("return"), expr, pos)) count in_always
+	| Case(lvalue, lst, pos) -> let width = get_max_bit_width_expr environ immod (Lvalue(lvalue, pos)) in
 														let (newmod, newcount, newlist) = List.fold_left (fun (immod1, count1, lst1) (item, stmt1, pos) -> 
 															if String.length item <> width then raise (Parse_Failure("Width mismatch in case statement.", pos))
 															else let (immod2, stmtlist2, count2) = translate_stmt environ immod1 stmt1 count1 true in
 															(immod2, count2, (item, stmtlist2) :: lst1)) (immod, count, []) lst in
 														if in_always then
-															(newmod, [ImCase(to_im_lvalue environ newmod lvalue, List.rev newlist)], newcount)
+															(newmod, [ImCase(to_im_lvalue environ newmod lvalue pos, List.rev newlist)], newcount)
 														else
-															({newmod with im_alwaysall = ImCase(to_im_lvalue environ newmod lvalue, List.rev newlist) :: newmod.im_alwaysall}, [], newcount)
+															({newmod with im_alwaysall = ImCase(to_im_lvalue environ newmod lvalue pos, List.rev newlist) :: newmod.im_alwaysall}, [], newcount)
   | For(id, init, cond, incr, stmt, pos) -> 
 		(* How this works: We add the loop variable as a parameter in the local parameter table, then translate the statement.*)
 		(* Rinse, repeat. Loop for a maximum of 1024 times. *)
@@ -452,16 +453,16 @@ let rec translate_stmt environ immod vshstmt count in_always = match vshstmt
 		with Not_found -> (try let _ = get_local immod.im_modname id environ in raise (Parse_Failure("Loop control variable must not have been used previously.", pos))
 		with Not_found -> (
 			(* compute the initialization value *)
-			let firstval = Int64.to_int (eval_expr immod.im_modname env init) in
+			let firstval = Int64.to_int (eval_expr immod.im_modname environ init) in
 			(* build_for: int -> int -> im_moddecl -> int -> im_moddecl * im_always_stmt list * int *)
 			let rec build_for currval loopsleft mod1 count = (if loopsleft < 0 then raise (Parse_Failure("For loop has run too many times.", pos)) else
 				(*Add currval to local parameter table*)
-				let newenv = {env with param_map = StringMap.add mod1.im_modname ((id, currval, Lexing.dummy_pos) :: (StringMap.find mod1.im_modname env.param_map)) env.param_map } in
-				let continue = eval_expr mod1.mod_name newenv cond in
+				let newenv = {environ with param_map = StringMap.add mod1.im_modname ((id, currval, Lexing.dummy_pos) :: (StringMap.find mod1.im_modname environ.param_map)) environ.param_map } in
+				let continue = eval_expr mod1.im_modname newenv cond in
 				if Int64.compare Int64.zero continue = 0 then (mod1, [], count)
 				else
-					let (mod2, stmtlist2, count2) = translate_stmt newenv mod1 stmt count1 in_always in
-					let newval = Int64.of_int (eval_expr mod1.mod_name newenv incr) in
+					let (mod2, stmtlist2, count2) = translate_stmt newenv mod1 stmt count in_always in
+					let newval = Int64.to_int (eval_expr mod1.im_modname newenv incr) in
 					let (mod3, stmtlist3, count3) = build_for newval (loopsleft - 1) mod2 count2 in
 					(mod3, stmtlist2 @ stmtlist3, count3)
 				)
@@ -475,10 +476,10 @@ let rec translate_stmt environ immod vshstmt count in_always = match vshstmt
 		let lvalue_width = get_lvalue_length environ immod lvalue pos in
 		let lvaluename = get_lvalue_name lvalue in
 		if lvalue_width < get_min_bit_width_expr environ immod expr then raise (Parse_Failure("Assignment width mismatch.", pos))
-		else if lvalue_width > get_max_bit_width_expr  environ immod expr then raise (Parse_Failure("Assignment width mismatch.", pos))
+		else if lvalue_width > get_max_bit_width_expr environ immod expr then raise (Parse_Failure("Assignment width mismatch.", pos))
 		else if in_always then (
 			try
-				let decl = get_local_all immod.mod_name lvaluename environ in
+				let decl = get_local_all immod.im_modname lvaluename environ in
 				if decl.decltype = Reg then 
 				let (immod1, imexpr, count1) = translate_expr environ immod expr count true in
 				(immod1, [ImRegAssign(imlvalue, imexpr)], count1)
@@ -488,45 +489,50 @@ let rec translate_stmt environ immod vshstmt count in_always = match vshstmt
 				  let (immod1, imexpr, count1) = translate_expr environ immod expr count true in
 					  (immod1, [ImRegAssign(change_im_lvalue_name tempregname imlvalue, imexpr)], count1)
 				else
-					let immod1 = { immod with im_declarations = (Reg, tempregname, decl.declwidth) :: immod.im_declarations;
+					let immod1 = { immod with im_declarations = (ImReg, tempregname, decl.declwidth) :: immod.im_declarations;
 																	  im_assignments = (ImRange(lvaluename, decl.declwidth - 1, 0), ImLvalue(ImRange(tempregname, decl.declwidth - 1, 0))) :: immod.im_assignments } in
 					let (immod2, imexpr, count1) = translate_expr environ immod1 expr count true in
 					  (immod2, [ImRegAssign(change_im_lvalue_name tempregname imlvalue, imexpr)], count1)
 						
 			with Not_found -> let tempregname = "_reg_" ^ lvaluename in
+			  let (_, width) = get_output immod.im_modname lvaluename environ in
 				if check_im_mod_local immod tempregname then
 				  let (immod1, imexpr, count1) = translate_expr environ immod expr count true in
 					  (immod1, [ImRegAssign(change_im_lvalue_name tempregname imlvalue, imexpr)], count1)
 				else
-					let immod1 = { immod with im_declarations = (Reg, tempregname, decl.declwidth) :: immod.im_declarations;
-                                    im_assignments = (ImRange(lvaluename, decl.declwidth - 1, 0), ImLvalue(ImRange(tempregname, decl.declwidth - 1, 0))) :: immod.im_assignments } in
+					let immod1 = { immod with im_declarations = (ImReg, tempregname, width) :: immod.im_declarations;
+                                    im_assignments = (ImRange(lvaluename, width - 1, 0), ImLvalue(ImRange(tempregname, width - 1, 0))) :: immod.im_assignments } in
 					let (immod2, imexpr, count1) = translate_expr environ immod1 expr count true in
 					  (immod2, [ImRegAssign(change_im_lvalue_name tempregname imlvalue, imexpr)], count1)
 			)
 		else (
 			try
-				let decl = get_local_all immod.mod_name lvaluename environ in
+				let decl = get_local_all immod.im_modname lvaluename environ in
 				if decl.decltype = Reg then raise (Parse_Failure("Cannot assign values to registers outside if and case blocks. Use wires.", pos))
 				else let (immod1, imexpr, count1) = translate_expr environ immod expr count false in
-				if imexpr = ImNoexpr then raise (Parse_Failure("Invalid right hand side value in assignment.". pos))
+				if imexpr = ImNoexpr then raise (Parse_Failure("Invalid right hand side value in assignment.", pos))
 				else ({immod1 with im_assignments = (imlvalue, imexpr) :: immod1.im_assignments}, [], count1)
 			with Not_found ->  let (immod1, imexpr, count1) = translate_expr environ immod expr count false in
-				if imexpr = ImNoexpr then raise (Parse_Failure("Invalid right hand side value in assignment.". pos))
+				if imexpr = ImNoexpr then raise (Parse_Failure("Invalid right hand side value in assignment.", pos))
 				else ({immod1 with im_assignments = (imlvalue, imexpr) :: immod1.im_assignments}, [], count1)
 			)
 		)
 
 let rec check_assignment_duplication startpos endpos paramname lst pos = if startpos < endpos then lst 
           else let newparamplace = paramname ^ (string_of_int startpos) in 
-               if List.mem newparamplace lst then raise (Parse_Failure("Duplicate assignment of \"" ^ name ^ "["^ (string_of_int startpos) ^ "]\".", pos))
+               if List.mem newparamplace lst then raise (Parse_Failure("Duplicate assignment of \"" ^ paramname ^ "["^ (string_of_int startpos) ^ "]\".", pos))
                else add_param_pos (startpos - 1) endpos paramname (newparamplace::lst) pos
 							
 (* translate_module: env -> mod_decl -> im_mod_decl*)
 let translate_module environ vshmod = 
-	if vshmod.libmod then { im_modname = vshmod.modname; im_libmod = true; im_libmod_name = vshmod.libmod_name; im_libmodwidth = vshmod.libmod_width; }
+	if vshmod.libmod then { im_modname = vshmod.modname; im_libmod = true; im_libmod_name = vshmod.libmod_name;
+	im_libmod_width = vshmod.libmod_width; im_inputs = []; im_outputs = []; im_declarations = [];	im_assignments = [];
+	im_instantiations = [];	im_alwaysall=[];	im_alwaysposedge = [];	im_alwaysnegedge = []; }
 	else (
 	ignore (check_unique_ids_in_module environ vshmod); (* check that all identifiers used in the module are unique *)
-  let ret = { im_modname = vshmod.modname } in
+  let ret = { im_modname = vshmod.modname; im_libmod = false; im_libmod_name = ""; 	im_libmod_width = 0;	im_inputs = [];
+	im_outputs = [];	im_declarations = [];	im_assignments = [];	im_instantiations = [];	im_alwaysall=[];
+	im_alwaysposedge = [];im_alwaysnegedge = [];} in
   (* build up inputs and outputs *)
   let ret = { ret with im_inputs = List.map (fun (i, w, _) -> (i, w)) vshmod.inputs } in
   let ret = { ret with im_outputs = List.map (fun (i, w, _) -> ( i, w)) vshmod.outputs } in
@@ -549,7 +555,7 @@ let translate_module environ vshmod =
     let ret = { ret with im_declarations = decls; im_assignments = assigns } in
 		let (immod, _, _) = 
 			List.fold_left (fun (immod1, _, count) stmt -> translate_stmt environ immod1 stmt count false) (ret, [], 0) vshmod.statements in
-		let finalmod = { immod with im_alwaysall = List.rev im_alwaysall } in
+		let finalmod = { immod with im_alwaysall = List.rev immod.im_alwaysall } in
 		 ignore (List.fold_left (fun lst1 (lval1, _) -> (match lval1 with
 		  ImSubscript(name, s) -> check_assignment_duplication s s name lst1 vshmod.modpos
 		| ImRange(name, up, lo) -> check_assignment_duplication up lo name lst1 vshmod.modpos
@@ -560,49 +566,49 @@ let set_standard_library_module_info mod1 = if mod1.libmod then (
 	if mod1.libmod_width < 1 then raise (Parse_Failure("Invalid standard module width.", mod1.modpos))
 	else match mod1.libmod_name with
 	  "SRL" -> {mod1 with inputs = [("clock", 1, Lexing.dummy_pos); ("reset", 1, Lexing.dummy_pos); 
-                                  ("S", mod1.libmod_width, Lexing.dummypos); ("E", mod1.libmod_width, Lexing.dummypos)];
-												outputs = [("Q", mod1.libmod_width, Lexing.dummypos);("QNOT", mod1.libmod_width, Lexing.dummypos)];
+                                  ("S", mod1.libmod_width, Lexing.dummy_pos); ("E", mod1.libmod_width, Lexing.dummy_pos)];
+												outputs = [("Q", mod1.libmod_width, Lexing.dummy_pos);("QNOT", mod1.libmod_width, Lexing.dummy_pos)];
 												returnwidth = mod1.libmod_width; } 
   | "JKL" -> {mod1 with inputs = [("clock", 1, Lexing.dummy_pos); ("reset", 1, Lexing.dummy_pos); 
-                                  ("J", mod1.libmod_width, Lexing.dummypos); ("K", mod1.libmod_width, Lexing.dummypos);
-																	("E", mod1.libmod_width, Lexing.dummypos)];
-												outputs = [("Q", mod1.libmod_width, Lexing.dummypos);("QNOT", mod1.libmod_width, Lexing.dummypos)];
+                                  ("J", mod1.libmod_width, Lexing.dummy_pos); ("K", mod1.libmod_width, Lexing.dummy_pos);
+																	("E", mod1.libmod_width, Lexing.dummy_pos)];
+												outputs = [("Q", mod1.libmod_width, Lexing.dummy_pos);("QNOT", mod1.libmod_width, Lexing.dummy_pos)];
 												returnwidth = mod1.libmod_width; }
 	| "DL"  -> {mod1 with inputs = [("clock", 1, Lexing.dummy_pos); ("reset", 1, Lexing.dummy_pos); 
-                                  ("D", mod1.libmod_width, Lexing.dummypos); ("E", mod1.libmod_width, Lexing.dummypos)];
-												outputs = [("Q", mod1.libmod_width, Lexing.dummypos);("QNOT", mod1.libmod_width, Lexing.dummypos)];
+                                  ("D", mod1.libmod_width, Lexing.dummy_pos); ("E", mod1.libmod_width, Lexing.dummy_pos)];
+												outputs = [("Q", mod1.libmod_width, Lexing.dummy_pos);("QNOT", mod1.libmod_width, Lexing.dummy_pos)];
 												returnwidth = mod1.libmod_width; }
 	| "TL"  -> {mod1 with inputs = [("clock", 1, Lexing.dummy_pos); ("reset", 1, Lexing.dummy_pos); 
-                                  ("T", mod1.libmod_width, Lexing.dummypos); ("E", mod1.libmod_width, Lexing.dummypos)];
-												outputs = [("Q", mod1.libmod_width, Lexing.dummypos);("QNOT", mod1.libmod_width, Lexing.dummypos)];
+                                  ("T", mod1.libmod_width, Lexing.dummy_pos); ("E", mod1.libmod_width, Lexing.dummy_pos)];
+												outputs = [("Q", mod1.libmod_width, Lexing.dummy_pos);("QNOT", mod1.libmod_width, Lexing.dummy_pos)];
 												returnwidth = mod1.libmod_width; }
 	| "DFF" -> {mod1 with inputs = [("clock", 1, Lexing.dummy_pos); ("reset", 1, Lexing.dummy_pos); 
-                                  ("D", mod1.libmod_width, Lexing.dummypos); ("S", mod1.libmod_width, Lexing.dummypos)];
-												outputs = [("Q", mod1.libmod_width, Lexing.dummypos);("QNOT", mod1.libmod_width, Lexing.dummypos)];
+                                  ("D", mod1.libmod_width, Lexing.dummy_pos); ("S", mod1.libmod_width, Lexing.dummy_pos)];
+												outputs = [("Q", mod1.libmod_width, Lexing.dummy_pos);("QNOT", mod1.libmod_width, Lexing.dummy_pos)];
 												returnwidth = mod1.libmod_width; }
 	| "TFF" -> {mod1 with inputs = [("clock", 1, Lexing.dummy_pos); ("reset", 1, Lexing.dummy_pos); 
-                                  ("T", mod1.libmod_width, Lexing.dummypos)];
-												outputs = [("Q", mod1.libmod_width, Lexing.dummypos);("QNOT", mod1.libmod_width, Lexing.dummypos)];
+                                  ("T", mod1.libmod_width, Lexing.dummy_pos)];
+												outputs = [("Q", mod1.libmod_width, Lexing.dummy_pos);("QNOT", mod1.libmod_width, Lexing.dummy_pos)];
 												returnwidth = mod1.libmod_width; }
 	| "JKFF" -> {mod1 with inputs = [("clock", 1, Lexing.dummy_pos); ("reset", 1, Lexing.dummy_pos); 
-                                  ("J", mod1.libmod_width, Lexing.dummypos); ("K", mod1.libmod_width, Lexing.dummypos)];
-												outputs = [("Q", mod1.libmod_width, Lexing.dummypos);("QNOT", mod1.libmod_width, Lexing.dummypos)];
+                                  ("J", mod1.libmod_width, Lexing.dummy_pos); ("K", mod1.libmod_width, Lexing.dummy_pos)];
+												outputs = [("Q", mod1.libmod_width, Lexing.dummy_pos);("QNOT", mod1.libmod_width, Lexing.dummy_pos)];
 												returnwidth = mod1.libmod_width; }
 	| "MUX" -> {mod1 with inputs = [("clock", 1, Lexing.dummy_pos); ("reset", 1, Lexing.dummy_pos); 
-                                  ("IN", mod1.libmod_width, Lexing.dummypos); ("SEL", get_min_bit_width (Int64.of_int mod1.libmod_width), Lexing.dummypos)];
-												outputs = [("OUT", 1, Lexing.dummypos)];
+                                  ("IN", mod1.libmod_width, Lexing.dummy_pos); ("SEL", get_min_bit_width (Int64.of_int mod1.libmod_width), Lexing.dummy_pos)];
+												outputs = [("OUT", 1, Lexing.dummy_pos)];
 												returnwidth = 1; }
 	| "DEMUX" -> {mod1 with inputs = [("clock", 1, Lexing.dummy_pos); ("reset", 1, Lexing.dummy_pos); 
-                                  ("IN", 1, Lexing.dummypos); ("SEL", get_min_bit_width (Int64.of_int mod1.libmod_width), Lexing.dummypos)];
-												outputs = [("OUT", mod1.libmod_width, Lexing.dummypos)];
+                                  ("IN", 1, Lexing.dummy_pos); ("SEL", get_min_bit_width (Int64.of_int mod1.libmod_width), Lexing.dummy_pos)];
+												outputs = [("OUT", mod1.libmod_width, Lexing.dummy_pos)];
 												returnwidth = mod1.libmod_width; }
 	| "DECODE" -> {mod1 with inputs = [("clock", 1, Lexing.dummy_pos); ("reset", 1, Lexing.dummy_pos); 
-                                  ("IN", get_min_bit_width (Int64.of_int mod1.libmod_width), Lexing.dummypos)];
-												outputs = [("OUT", mod1.libmod_width, Lexing.dummypos)];
+                                  ("IN", get_min_bit_width (Int64.of_int mod1.libmod_width), Lexing.dummy_pos)];
+												outputs = [("OUT", mod1.libmod_width, Lexing.dummy_pos)];
 												returnwidth = mod1.libmod_width; }
 	| "ENCODE" -> {mod1 with inputs = [("clock", 1, Lexing.dummy_pos); ("reset", 1, Lexing.dummy_pos); 
-                                  ("IN", mod1.libmod_width, Lexing.dummypos)];
-												outputs = [("OUT", get_min_bit_width (Int64.of_int mod1.libmod_width), Lexing.dummypos)];
+                                  ("IN", mod1.libmod_width, Lexing.dummy_pos)];
+												outputs = [("OUT", get_min_bit_width (Int64.of_int mod1.libmod_width), Lexing.dummy_pos)];
 												returnwidth = get_min_bit_width (Int64.of_int mod1.libmod_width); }
 	| _ -> raise (Parse_Failure("Unsupported standard module name.", mod1.modpos)))
 	 else mod1
@@ -611,7 +617,7 @@ let set_standard_library_module_info mod1 = if mod1.libmod then (
 let translate modules =
 
   (* Check that the module names are consistent and the return widths are valid. *)
-  let mod_names = check_mod_info [] modules in
+  let _ = check_mod_info [] modules in
 	(* Set information for standard library module declarations *)
 	let modules = List.map set_standard_library_module_info modules in
   (* Build the environment *)
@@ -621,4 +627,4 @@ let translate modules =
   local_map = string_map_locals StringMap.empty modules;
   return_map = string_map_returns StringMap.empty modules;
   }  
-  in List.map (translate_module env) modules
+  in List.map (translate_module environment) modules

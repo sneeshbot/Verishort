@@ -3,7 +3,7 @@
 
 %token SEMICOLON LPAREN RPAREN LBRACE RBRACE COMMA COLON LBRACKET RBRACKET EOF
 %token CASE CLOCK CONCAT ELSE FOR IF INPUT MODULE NEGEDGE OUTPUT PARAMETER POSEDGE REG RESET RETURN WIRE
-%token ASSIGN NOT OR XOR AND NOR XNOR NAND EQ NE GT GE LT LE LSHIFT RSHIFT PLUS MINUS MULTIPLY DIVIDE MODULUS SIGEXT
+%token ASSIGN NOT OR XOR AND NOR XNOR NAND EQ NE GT GE LT LE LSHIFT RSHIFT PLUS MINUS MULTIPLY MODULUS SIGEXT
 %token NOELSE UMINUS
 %token <string> ID
 %token <int> DLIT
@@ -43,6 +43,8 @@ moddecl:
 		declarations = $8;
 		returnwidth = 0;
 		libmod = false;
+		libmod_name = "";
+		libmod_width = 0;
 		modpos = Parsing.symbol_start_pos ();
 		}}
  | MODULE ID LBRACKET DLIT RBRACKET LPAREN input_output RPAREN LBRACE parameter_list decl_list stmt_list RBRACE {{
@@ -54,9 +56,22 @@ moddecl:
 		declarations = $11;
 		returnwidth = $4;
 		libmod = false;
+		libmod_name = "";
+		libmod_width = 0;
 		modpos = Parsing.symbol_start_pos ();
 		}}
- | MODULE ID ASSIGN ID LBRACKET DLIT RBRACKET SEMICOLON ({ modname = $2; libmod = true; libmod_name = $4; libmod_width = $6; modpos = Parsing.symbol_start_pos (); }) 
+ | MODULE ID ASSIGN ID LBRACKET DLIT RBRACKET SEMICOLON {{ 
+	  modname = $2;
+		inputs = [];
+		outputs = [];
+		statements = [];
+		parameters = [];
+		declarations = [];
+		returnwidth = 0;
+		libmod = true;
+		libmod_name = $4;
+		libmod_width = $6; 
+		modpos = Parsing.symbol_start_pos (); }} 
 
 input_output:
 			INPUT formals_opt  { $2, [] }
@@ -135,9 +150,10 @@ stmt:
 		expr SEMICOLON { Expr($1, Parsing.symbol_start_pos ()) }
 	| RETURN expr SEMICOLON { Return($2, Parsing.symbol_start_pos ()) }
 	| LBRACE stmt_list RBRACE { Block(List.rev $2, Parsing.symbol_start_pos ()) }
-	| IF LPAREN condition RPAREN stmt %prec NOELSE { If($3, $5, Nop(Parsing.symbol_start_pos ()), Parsing.symbol_start_pos ()) } 
+	| IF LPAREN condition_clock RPAREN stmt %prec NOELSE { If($3, $5, Nop(Parsing.symbol_start_pos ()), Parsing.symbol_start_pos ()) }
+  | IF LPAREN expr RPAREN stmt %prec NOELSE { If(Expression($3), $5, Nop(Parsing.symbol_start_pos ()), Parsing.symbol_start_pos ()) } 
 	| IF LPAREN expr RPAREN stmt ELSE stmt { If(Expression($3), $5, $7, Parsing.symbol_start_pos ()) }
-	| IF LPAREN condition_clock RPAREN stmt ELSE stmt { raise (Parse_Failure("Clock edge if statements may not have else clauses.", Parsing.symbol_start_pos ()) }
+	| IF LPAREN condition_clock RPAREN stmt ELSE stmt { raise (Parse_Failure("Clock edge if statements may not have else clauses.", Parsing.symbol_start_pos ())) }
 	| CASE LPAREN lvalue RPAREN LBRACE case_list RBRACE { Case($3, List.rev $6, Parsing.symbol_start_pos ()) }
 	| FOR LPAREN ID ASSIGN expr SEMICOLON expr SEMICOLON ID ASSIGN expr RPAREN stmt { if $3 <> $9 then raise (Parse_Failure("For loops must have only a single loop variable.", Parsing.symbol_start_pos ())) else For($3, $5, $7, $11, $13, Parsing.symbol_start_pos ()) }
 	| FOR LPAREN error RPAREN stmt { raise (Parse_Failure("Invalid for loop header.", Parsing.symbol_start_pos ())) } 
@@ -148,11 +164,6 @@ stmt:
 condition_clock:
 		POSEDGE { Posedge }
 	| NEGEDGE { Negedge }
-
-
-condition:
-		condition_clock { $1 }
-	| expr { Expression($1) }
 
 case_list:
 		case_item { [$1] }
@@ -175,7 +186,6 @@ expr:
 	| expr PLUS expr { Binop($1, Plus, $3, Parsing.symbol_start_pos ()) }
 	| expr MINUS expr { Binop($1, Minus, $3, Parsing.symbol_start_pos ()) }
 	| expr MULTIPLY expr { Binop($1, Multiply, $3, Parsing.symbol_start_pos ()) }
-	| expr DIVIDE expr {Binop($1, Divide, $3, Parsing.symbol_start_pos ()) }
 	| expr MODULUS expr {Binop($1, Modulus, $3, Parsing.symbol_start_pos ())}
 	| DLIT SIGEXT expr {  Signext($1, $3, Parsing.symbol_start_pos ()) }
 	| expr EQ expr { Binop($1, Eq, $3, Parsing.symbol_start_pos ())}
@@ -193,8 +203,8 @@ expr:
 	| expr LSHIFT expr {Binop($1, Lshift, $3, Parsing.symbol_start_pos ()) }
 	| expr RSHIFT expr { Binop($1, Rshift, $3, Parsing.symbol_start_pos ())}
 	| NOT expr { Unary(Not, $2, Parsing.symbol_start_pos ()) }
-	| PLUS expr %prec UPLUS { Unary(Plus, $1, Parsing.symbol_start_pos ()) }
-	| MINUS expr %prec UPLUS { Unary(Minus, $1, Parsing.symbol_start_pos ()) } 
+	| PLUS expr %prec UPLUS { Unary(Plus, $2, Parsing.symbol_start_pos ()) }
+	| MINUS expr %prec UPLUS { Unary(Minus, $2, Parsing.symbol_start_pos ()) } 
 	| AND lvalue %prec NOT {Reduct(And, $2, Parsing.symbol_start_pos ()) } /* reductions */
 	| OR lvalue %prec NOT {Reduct(Or, $2, Parsing.symbol_start_pos ()) }
 	| XOR lvalue %prec NOT {Reduct(Xor, $2, Parsing.symbol_start_pos ()) }
@@ -204,10 +214,6 @@ expr:
 	| RESET { Reset(Parsing.symbol_start_pos ()) }
 	| CONCAT LPAREN concat_list RPAREN { Concat(List.rev $3, Parsing.symbol_start_pos ()) } /* Concatenation */
 	| ID LPAREN binding_in_list_opt SEMICOLON binding_out_list_opt RPAREN SEMICOLON { Inst($1, List.rev $3, List.rev $5, Parsing.symbol_start_pos ()) } /*Module instantiation */
-
-expr_opt:
-		/* nothing */ { Noexpr(Parsing.symbol_start_pos ()) }
-	| expr { $1 }
 
 concat_list:
 		concat_item { [$1] }
