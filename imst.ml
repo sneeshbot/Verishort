@@ -38,6 +38,9 @@ type im_decl = im_decl_type * string * int
 
 type im_mod_decl = {
     im_modname : string;
+		im_libmod : bool;
+		im_libmod_name: string;
+		im_libmod_width: int;
     im_inputs : (string * int) list;
     im_outputs : (string * int) list;
     im_declarations : im_decl list;

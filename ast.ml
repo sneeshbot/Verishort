@@ -33,7 +33,7 @@ type statement =
   | If of condition * statement * statement * Lexing.position
   | Case of lvalue * case_item list * Lexing.position
   | Return of expr * Lexing.position
-  | For of expr * expr * expr * statement * Lexing.position
+  | For of string * expr * expr * expr * statement * Lexing.position
   | Assign of lvalue * expr * Lexing.position
 
 and case_item = string * statement * Lexing.position
@@ -50,7 +50,6 @@ type declaration = {
 
 type id_with_width = string * int * Lexing.position
 
-
 type mod_decl= {
 	modname : string; (* Name of the module *)
 	inputs : id_with_width list;
@@ -59,6 +58,9 @@ type mod_decl= {
 	parameters : parameter list;
 	declarations: declaration list;
 	returnwidth: int;
+	libmod : bool;
+	libmod_name : string;
+	libmod_width : int;  
 	modpos : Lexing.position;
 }
 

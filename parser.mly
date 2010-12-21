@@ -42,6 +42,7 @@ moddecl:
 		parameters = $7;
 		declarations = $8;
 		returnwidth = 0;
+		libmod = false;
 		modpos = Parsing.symbol_start_pos ();
 		}}
  | MODULE ID LBRACKET DLIT RBRACKET LPAREN input_output RPAREN LBRACE parameter_list decl_list stmt_list RBRACE {{
@@ -52,8 +53,10 @@ moddecl:
 		parameters = $10;
 		declarations = $11;
 		returnwidth = $4;
+		libmod = false;
 		modpos = Parsing.symbol_start_pos ();
 		}}
+ | MODULE ID ASSIGN ID LBRACKET DLIT RBRACKET SEMICOLON ({ modname = $2; libmod = true; libmod_name = $4; libmod_width = $6; modpos = Parsing.symbol_start_pos (); }) 
 
 input_output:
 			INPUT formals_opt  { $2, [] }
@@ -132,17 +135,23 @@ stmt:
 		expr SEMICOLON { Expr($1, Parsing.symbol_start_pos ()) }
 	| RETURN expr SEMICOLON { Return($2, Parsing.symbol_start_pos ()) }
 	| LBRACE stmt_list RBRACE { Block(List.rev $2, Parsing.symbol_start_pos ()) }
-	| IF LPAREN condition RPAREN stmt %prec NOELSE { If($3, $5, Nop(Parsing.symbol_start_pos ()), Parsing.symbol_start_pos ()) }
-	| IF LPAREN condition RPAREN stmt ELSE stmt { If($3, $5, $7, Parsing.symbol_start_pos ()) }
+	| IF LPAREN condition RPAREN stmt %prec NOELSE { If($3, $5, Nop(Parsing.symbol_start_pos ()), Parsing.symbol_start_pos ()) } 
+	| IF LPAREN expr RPAREN stmt ELSE stmt { If(Expression($3), $5, $7, Parsing.symbol_start_pos ()) }
+	| IF LPAREN condition_clock RPAREN stmt ELSE stmt { raise (Parse_Failure("Clock edge if statements may not have else clauses.", Parsing.symbol_start_pos ()) }
 	| CASE LPAREN lvalue RPAREN LBRACE case_list RBRACE { Case($3, List.rev $6, Parsing.symbol_start_pos ()) }
-	| FOR LPAREN expr_opt SEMICOLON expr_opt SEMICOLON expr_opt RPAREN stmt { For($3, $5, $7, $9, Parsing.symbol_start_pos ()) }
+	| FOR LPAREN ID ASSIGN expr SEMICOLON expr SEMICOLON ID ASSIGN expr RPAREN stmt { if $3 <> $9 then raise (Parse_Failure("For loops must have only a single loop variable.", Parsing.symbol_start_pos ())) else For($3, $5, $7, $11, $13, Parsing.symbol_start_pos ()) }
+	| FOR LPAREN error RPAREN stmt { raise (Parse_Failure("Invalid for loop header.", Parsing.symbol_start_pos ())) } 
 	| SEMICOLON { Nop(Parsing.symbol_start_pos ()) } /* empty statements */
 	| lvalue ASSIGN expr SEMICOLON { Assign($1, $3, Parsing.symbol_start_pos ()) } 
 
 
-condition:
+condition_clock:
 		POSEDGE { Posedge }
 	| NEGEDGE { Negedge }
+
+
+condition:
+		condition_clock { $1 }
 	| expr { Expression($1) }
 
 case_list:
