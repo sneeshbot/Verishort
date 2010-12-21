@@ -74,16 +74,17 @@ let rec print_expression = function
 	| ImConcat(x,_) -> print_string "concat("; print_concats x; print_string ")"
 	| ImNoexpr(_) -> print_endline ""
 
-let print_assignment (lv, expr) = print_string "assign"; print_lvalue lv; print_string "="; print_expression expr;
+let print_assignment (lv, expr) = print_string "assign"; print_lvalue lv; print_string "="; print_expression expr
 
 let print_assignments asses = List.iter print_assignment asses
+
 let print_case (b, stmt, _) = print_string(b ^ "b: "); print_statement stmt
 let print_case_list list = List.iter print_case list
 
 let print_statement = function
 	  ImNop(_) -> print_endline ""
-	| ImIf(pred,tru,fal, _) -> print_endline "begin"; print_string "if"; print_string("(" ^ print_expression im_expr ^ ")"); print_newline (); List.iter print_statement tru; print_endline "else"; List.iter print_statement fal; print_endline "end";
-	| ImCase(lv,csl,_) -> print_endline "case"; print_string("(" ^ print_expression lv ^ ")"; print_newline (); print_case list csl; print_endline "endcase"
-	| ImRegAssign(lv, expr) -> print_string lv; print_string "="; print_expression expr;
+	| ImIf(pred,tru,fal, _) -> print_endline "begin"; print_string "if"; print_string("(" ^ print_expression im_expr ^ ")"); print_newline (); List.iter print_statement tru; print_endline "else"; List.iter print_statement fal; print_endline "end"
+	| ImCase(lv,csl,_) -> print_endline "case"; print_string("(" ^ print_expression lv ^ ")"); print_newline (); print_case list csl; print_endline "endcase"
+	| ImRegAssign(lv, expr) -> print_string lv; print_string "="; print_expression expr
 
 

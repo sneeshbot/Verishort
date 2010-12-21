@@ -13,11 +13,10 @@ type im_expr =
   | ImConcat of im_concat_item list
   | ImNoexpr
 and im_concat_item = 
-	ImConcatLit of int * im_literal
+	  ImConcatLit of int * im_literal
   | ImConcatLvalue of int * im_lvalue
 and im_lvalue =
-	ImIdentifier of string
-  | ImSubscript of string * int
+    ImSubscript of string * int
   | ImRange of string * int * int
   
 type im_assignment = im_lvalue * im_expr
