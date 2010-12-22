@@ -32,7 +32,7 @@ asttoimst.cmo: asttoimst.ml
 #vsc: parser.cmo scanner.cmo verishort.cmo 
 #	ocamlc -o vsc parser.cmo scanner.cmo verishort.cmo
 
-#imstotocode: ast.cmo imst.cmo parser.cmo scanner.cmo asttoimst.cmo imsttocode.cmo 
+#imsttocode: ast.cmo imst.cmo parser.cmo scanner.cmo asttoimst.cmo imsttocode.cmo 
 #	ocamlc -o printer ast.cmo imst.cmo parser.cmo scanner.cmo asttoimst.cmo imsttocode.cmo 
 #all: imsttocode
 
