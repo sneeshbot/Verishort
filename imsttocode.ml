@@ -114,7 +114,7 @@ let print_module_sig m =
   List.iter (fun (id, width ) -> print_string ("output " ^ (if width == 1 then "" else ("[" ^ string_of_int (width - 1) ^ ":0] ")) ^ "_" ^ id ^ ";\n")) (snd mod_args))
   
   (* print decls *)
-let print_decl (typ, str, width) = print_endline ((if typ = ImWire then "wire" else "reg") ^ " " ^ (if width == 1 then "" else ("[" ^ (string_of_int (width - 1)) ^ ":0] ")) ^ str ^ ";\n")  
+let print_decl (typ, str, width) = print_endline ((if typ = ImWire then "wire" else "reg") ^ " " ^ (if width == 1 then "" else ("[" ^ (string_of_int (width - 1)) ^ ":0] ")) ^ "_" ^ str ^ ";\n")  
 
 let print_assignment (lv, expr) = print_string ("assign " ^ (stringify_lvalue lv)); print_string (" = " ^ (stringify_expression expr)); print_endline ";"
 
