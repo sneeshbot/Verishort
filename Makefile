@@ -26,7 +26,7 @@ printer.cmo: printer.ml
 asttoimst.cmo: asttoimst.ml
 	ocamlc -c asttoimst.ml
 imsttocode.cmo: imsttocode.ml
-	ocamlc -c imsttocode.ml
+	ocamlc -custom -c str.cma imsttocode.ml
 	
 #all
 #vsc: parser.cmo scanner.cmo verishort.cmo 
@@ -38,7 +38,7 @@ imsttocode.cmo: imsttocode.ml
 
 
 vsc: ast.cmo imst.cmo parser.cmo scanner.cmo asttoimst.cmo imsttocode.cmo 
-	ocamlc -o vsc ast.cmo imst.cmo parser.cmo scanner.cmo asttoimst.cmo imsttocode.cmo 
+	ocamlc -o vsc str.cma ast.cmo imst.cmo parser.cmo scanner.cmo asttoimst.cmo imsttocode.cmo 
 all: vsc
 
 clean:

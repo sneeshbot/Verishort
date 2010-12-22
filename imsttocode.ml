@@ -2,6 +2,7 @@ open Ast
 open Imst
 open Parser
 open Asttoimst
+open Str
 
 (*let rec invert_binary_actual n x = 
   if n < 0 then x else
@@ -144,7 +145,6 @@ let print_lib libname width libmap =
 *)
 
 let print_libmod libname libwidth actualname = 			
-	let code = "" in
 	let filename = (Filename.current_dir_name ^ "/stdlib/" ^ libname ^ ".v") in
 	let chan = open_in filename in
 	try
@@ -152,21 +152,21 @@ let print_libmod libname libwidth actualname =
 			let rawline = input_line chan in
 			let replname = Str.global_replace (Str.regexp_string libname) actualname rawline in
 			let replwidth = Str.global_replace (Str.regexp_string "WIDTHMINUSONE") (string_of_int (libwidth - 1)) replname in
-			let repllogwidth = Str.global_replace (Str.regexp_string "LOGWIDTH") (string_of_int (get_min_bit_width (Int64.of_int width))) repllogwidth in
+			let repllogwidth = Str.global_replace (Str.regexp_string "LOGWIDTH") (string_of_int (get_min_bit_width (Int64.of_int libwidth))) replwidth in
 			print_endline repllogwidth 
 		done;
-	with End_of_file -> close_in chan;
+	with End_of_file -> close_in chan
 		
 	
 	
-	ignore(StringSet.add libname libset)
+	(*ignore(StringSet.add libname libset)*)
 	
 	(*else ()*)
 	
 	
 let print_module m =
 	let libset = StringSet.empty in  	
-	if m.im_libmod then print_libmod m.im_libmodname m.im_libmodwidth m.im_modname else (
+	if m.im_libmod then print_libmod m.im_libmod_name m.im_libmod_width m.im_modname else (
    print_module_sig m;
    List.iter print_decl m.im_declarations;
    List.iter print_assignment m.im_assignments;
