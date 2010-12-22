@@ -545,13 +545,13 @@ let translate_module environ vshmod =
   let (decls, assigns) = List.fold_left (fun (olddecl, oldassign) decl -> 
 	 (
 		((to_im_decl_type decl.decltype), decl.declname, decl.declwidth) :: olddecl,
-	  (ImRange(decl.declname, decl.declwidth - 1, 0), (match decl.init with 
-			   Noexpr(_) -> ImNoexpr
-	     | x -> let value = eval_expr vshmod.modname environ x in 
+	  (match decl.init with
+			   Noexpr(_) -> oldassign  
+	     | x -> (ImRange(decl.declname, decl.declwidth - 1, 0), (let value = eval_expr vshmod.modname environ x in 
 			          if get_min_bit_width value > decl.declwidth then 
 									raise (Parse_Failure("Overflow in initialization.", decl.declpos)) 
 								else ImLiteral(value, decl.declwidth))) :: oldassign
-	 )) ([], []) vshmod.declarations in
+	 ))) ([], []) vshmod.declarations in
     let ret = { ret with im_declarations = decls; im_assignments = assigns } in
 		let (immod, _, _) = 
 			List.fold_left (fun (immod1, _, count) stmt -> translate_stmt environ immod1 stmt count false) (ret, [], 0) vshmod.statements in
