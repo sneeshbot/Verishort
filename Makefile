@@ -24,11 +24,19 @@ printer.cmo: printer.ml
 #compile.cmo: compile.ml
 #	ocamlc -c compile.ml # compile translator
 asttoimst.cmo: asttoimst.ml
-	ocamlc -c asttoimst.ml	
+	ocamlc -c asttoimst.ml
+#imsttocode.cmo: imsttocode.ml
+#	ocamlc -c imstotocode.ml
 	
 #all
 #vsc: parser.cmo scanner.cmo verishort.cmo 
 #	ocamlc -o vsc parser.cmo scanner.cmo verishort.cmo
+
+#imsttocode: ast.cmo imst.cmo parser.cmo scanner.cmo asttoimst.cmo imsttocode.cmo 
+#	ocamlc -o printer ast.cmo imst.cmo parser.cmo scanner.cmo asttoimst.cmo imsttocode.cmo 
+#all: imsttocode
+
+
 printer: ast.cmo imst.cmo parser.cmo scanner.cmo asttoimst.cmo printer.cmo 
 	ocamlc -o printer ast.cmo imst.cmo parser.cmo scanner.cmo asttoimst.cmo printer.cmo 
 all: printer
