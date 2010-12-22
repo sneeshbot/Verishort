@@ -54,7 +54,7 @@ foreach $verishortTestFile (@verishorts) {
 	
 	
 	#Remove the compiled file
-	$remove = "rm $translatedFile";
+	#$remove = "rm $translatedFile";
 	print "$remove\n";
 	print `$remove`;
 	
