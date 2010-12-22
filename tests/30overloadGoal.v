@@ -1,44 +1,44 @@
-module gate(clock, reset, enable, in, out);
-	input clock;
-	input reset;
+module gate(_clock, _reset, enable, in, out);
+	input _clock;
+	input _reset;
 	input enable;
 	input in;
 	output out;
 
-	reg clock_reg;
-	assign clock = clock_reg;
-	reg reset_reg;
-	assign reset = reset_reg;
+	reg _clock_reg;
+	assign _clock = _clock_reg;
+	reg _reset_reg;
+	assign _reset = _reset_reg;
 	
 	always @(*) begin
 		if (enable) begin
-			clock_reg <= clock & 1;
+			_clock_reg = _clock & 1;
 			end
 		if (!enable) begin
-			clock_reg <= 0;
-			reset_reg <= 1;
+			_clock_reg = 0;
+			_reset_reg = 1;
 			end
 
-		if (reset) begin
-			clock_reg <= 0;
-			reset_reg <= 0;
+		if (_reset) begin
+			_clock_reg = 0;
+			_reset_reg = 0;
 			end
 		end
 
-	gated gated_0(.clock(clock),.reset(reset),.in(in),.out(out))
+	gated gated_0(._clock(_clock),._reset(_reset),.in(in),.out(out));
 	endmodule
 
-module gated(clock, reset, in, out);
-	input clock;
-	input reset;
+module gated(_clock, _reset, in, out);
+	input _clock;
+	input _reset;
 	input in;
 	output out;
 
 	reg out_reg;
 	assign out = out_reg;
 
-	always @(posedge clock) begin
-		out_reg <= in;
+	always @(posedge _clock) begin
+		out_reg = in;
 		end
 
 	endmodule

@@ -1,6 +1,6 @@
-module pn(clock,reset,o,p);
-	input clock;
-	input reset;
+module pn(_clock,_reset,o,p);
+	input _clock;
+	input _reset;
 	output o;
 	output p;
 
@@ -9,12 +9,12 @@ module pn(clock,reset,o,p);
 	reg p_reg;
 	assign p=p_reg;
 	
-	always @ (posedge clk) begin
+	always @ (posedge _clock) begin
 		o_reg<=1;
 		p_reg<=0;
 		end
 
-	always @ (negedge clk) begin
+	always @ (negedge _clock) begin
 		if (o==1) begin
 			o_reg<=0;
 			p_reg<=1;
@@ -22,7 +22,7 @@ module pn(clock,reset,o,p);
 		end
 
 	always @ (*) begin
-		if (reset) begin
+		if (_reset) begin
 			o_reg<=0;
 			p_reg<=0;
 			end

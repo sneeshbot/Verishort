@@ -1,6 +1,6 @@
-module ifElse(clock,reset,a,b,c);
-	input clock;
-	input reset;
+module ifElse(_clock,_reset,a,b,c);
+	input _clock;
+	input _reset;
 	input a;
 	output b;
 	output c;
@@ -29,7 +29,7 @@ module ifElse(clock,reset,a,b,c);
 			d_reg <= 3;
 			end
 
-		if (reset) begin
+		if (_reset) begin
 			b_reg <=0;
 			c_reg <=0;
 			end

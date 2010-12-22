@@ -1,8 +1,8 @@
 //NOT DONE
 
-module memArray(clock, reset, row, column, return)
-	input clock;
-	input reset;
+module memArray(_clock, _reset, row, column, return);
+	input _clock;
+	input _reset;
 	input [1:0]row;
 	input [1:0]column;
 	output return;
@@ -27,9 +27,9 @@ module memArray(clock, reset, row, column, return)
 	assign return = value;
 	endmodule
 
-module memRow(clock, reset, select, return)
-	input clock;
-	input reset;
+module memRow(_clock, _reset, select, return);
+	input _clock;
+	input _reset;
 	input [1:0]select;
 	output return;
 	

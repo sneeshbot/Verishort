@@ -1,6 +1,6 @@
-module mod(clock,reset,a);
-	input clock;
-	input reset;
+module mod(_clock,_reset,a);
+	input _clock;
+	input _reset;
 
 	output [1:0]a;
 	wire b;
@@ -12,7 +12,7 @@ module mod(clock,reset,a);
 	assign b = 0;
 	assign c = 1;
 	assign d = 2'b10;
-	assign e = {b,3{c},1{2'b01}};
+	assign e = {b,{3{c}},{1{2'b01}}};
 
-	assign f = 2{e};
+	assign f = {2{e}};
 	endmodule

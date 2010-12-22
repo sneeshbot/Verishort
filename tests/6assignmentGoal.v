@@ -1,6 +1,6 @@
-module mod(clock,reset,a,b);
-	input clock;
-	input reset;
+module mod(_clock,_reset,a,b);
+	input _clock;
+	input _reset;
 
 	input a;
 	output b;

@@ -1,6 +1,6 @@
-module count(clock, reset, out,tick);
-	input clock;
-	input reset;
+module count(_clock, _reset, out,tick);
+	input _clock;
+	input _reset;
 	output [3:0]out;
 	output tick;
 
@@ -10,7 +10,7 @@ module count(clock, reset, out,tick);
 	assign out = c;
 	assign tick = t;
 
-	always @(posedge clock) begin
+	always @(posedge _clock) begin
 		c <= c + 1;
 		if (t) begin
 			t <= 0;
@@ -20,7 +20,7 @@ module count(clock, reset, out,tick);
 			end
 		end
 	always @(*) begin
-		if (reset) begin
+		if (_reset) begin
 			c <= 0;
 			t <= 0;
 			end

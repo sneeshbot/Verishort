@@ -1,6 +1,6 @@
-module mod(clock,reset, a);
-	input clock;
-	input reset;
+module mod(_clock,_reset, a);
+	input _clock;
+	input _reset;
 	output [3:0] a;
-	a=15;
+	assign a=15;
 	endmodule

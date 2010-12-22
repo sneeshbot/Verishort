@@ -1,14 +1,14 @@
-module mod0(clock,reset,a,b);
-	input clock;
-	input reset;
+module mod0(_clock,_reset,a,b);
+	input _clock;
+	input _reset;
 
 	input a;
 	output b;
 	endmodule
 
-module mod1(clock,reset,a,b);
-	input clock;
-	input reset;
+module mod1(_clock,_reset,a,b);
+	input _clock;
+	input _reset;
 
 	input a;
 	output b;

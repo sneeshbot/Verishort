@@ -1,6 +1,6 @@
-module m(clock,reset,b,c,x,y);
-	input clock;
-	input reset;
+module m(_clock,_reset,b,c,x,y);
+	input _clock;
+	input _reset;
 	output [1:0] b;
 	output c;
 	output x;
