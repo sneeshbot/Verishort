@@ -1,34 +1,29 @@
-module JKL(clock,reset,J,K,E,Q,QNOT);
-	input clock;
-	input reset;
-	input J;
-	input K;
-	input E;
-	output Q;
-	output QNOT;
+module JKL(_clock,_reset,_J,_K,_E,_Q,_QNOT);
+	input _clock;
+	input _reset;
+	input _J;
+	input _K;
+	input _E;
+	output _Q;
+	output _QNOT;
 	
 	reg Q_reg;
-	reg QNOT_reg;
-	assign Q = Q_reg;
-	assign QNOT = QNOT_reg;
+	assign _Q = Q_reg;
+	assign _QNOT = ~Q_reg;
 	
-	always @ (posedge clock) begin
-		if (reset) begin 
+	always @ (*) begin
+		if (_reset) begin 
 			Q_reg = 0;
-			QNOT_reg = 1;
 			end
-		else if (E) begin
-			if (J & K) begin
+		else if (_E) begin
+			if (_J & _K) begin
 				Q_reg = ~Q_reg;
-				QNOT_reg = ~QNOT_reg;
 				end
-		  	else if (J) begin
+		  	else if (_J) begin
 		  		Q_reg = 1;
-		  		QNOT_reg = 0;
 		  		end
-			else if (K) begin
+			else if (_K) begin
 				Q_reg = 0;
-				QNOT_reg = 1;
 				end
 			end
 		end

@@ -1,14 +1,26 @@
-module DL(clock,reset,D,E,Q,QNOT);
-	input clock;
-	input reset;
-	input D;
-	input E;
-	output Q;
-	output QNOT;
+module DL(_clock,_reset,_D,_E,_Q,_QNOT);
+	input _clock;
+	input _reset;
+	input _D;
+	input _E;
+	output _Q;
+	output _QNOT;
 	
-	reg Q_reg;
-	reg QNOT_reg;
-	assign Q = Q_reg;
-	assign QNOT = QNOT_reg;
+	reg Q;
+	assign _Q = Q;
+	assign _QNOT = ~Q;
 	
-	always @ (posedge clk)
+	always @ (*) begin 
+		if (_reset) begin
+			Q = 0;
+			end
+		else if (_E) begin
+			if (_D) begin
+				Q = 1;
+				end
+			else begin
+				Q = 0;				
+				end
+			end
+		end
+	endmodule
