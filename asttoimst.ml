@@ -556,10 +556,13 @@ let translate_module environ vshmod =
 		let (immod, _, _) = 
 			List.fold_left (fun (immod1, _, count) stmt -> translate_stmt environ immod1 stmt count false) (ret, [], 0) vshmod.statements in
 		let finalmod = { immod with im_alwaysall = List.rev immod.im_alwaysall } in
-		 ignore (List.fold_left (fun lst1 (lval1, _) -> (match lval1 with
+		 ignore (List.fold_left (fun lst1 lval1 -> (match lval1 with
 		  ImSubscript(name, s) -> check_assignment_duplication s s name lst1 vshmod.modpos
 		| ImRange(name, up, lo) -> check_assignment_duplication up lo name lst1 vshmod.modpos
-		)) [] finalmod.im_assignments); finalmod
+		)) [] ((List.map (fun (s, _) -> s) finalmod.im_assignments) @ 
+		List.map (fun (_, exp) -> match exp with ImLvalue(l) -> l 
+		           | _ -> raise (Parse_Failure("Internal compiler error 005. Contact manufacturer for more information.", vshmod.modpos))) 
+			(List.flatten (List.map (fun (_, _, l) -> l) finalmod.im_instantiations)))); finalmod
   )
     
 let set_standard_library_module_info mod1 = if mod1.libmod then (
