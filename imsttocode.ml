@@ -165,7 +165,6 @@ let print_libmod libname libwidth actualname =
 	
 	
 let print_module m =
-	let libset = StringSet.empty in  	
 	if m.im_libmod then print_libmod m.im_libmod_name m.im_libmod_width m.im_modname else (
    print_module_sig m;
    List.iter print_decl m.im_declarations;
