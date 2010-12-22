@@ -2,6 +2,23 @@
 \usepackage[letterpaper,margin=1in]{geometry}
 \usepackage{array}
 \usepackage{graphicx}
+\usepackage{listings}
+
+\lstset{ %
+basicstyle=\scriptsize,       % the size of the fonts that are used for the code
+numbers=left,                   % where to put the line-numbers
+numberstyle=\footnotesize,      % the size of the fonts that are used for the line-numbers
+numbersep=5pt,                  % how far the line-numbers are from the code
+frame=single,	                % adds a frame around the code
+tabsize=2,	                % sets default tabsize to 2 spaces
+captionpos=t,                   % sets the caption-position to bottom
+breaklines=true,                % sets automatic line breaking
+breakatwhitespace=false,        % sets if automatic breaks should only happen at whitespace
+title=\lstname,                 % show the filename of files included with \lstinputlisting;
+                                % also try caption instead of title
+}
+
+
 \newcommand{\tab}{\hspace*{2em}}
 %\setlength{\topmargin}{-.5in}
 %\setlength{\textheight}{9in}
@@ -714,5 +731,18 @@
 % Mushy stuff that can be done at the end.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%    
 \section{Lessons Learned}
+
+\newpage
         
+\section{Codebase}
+\lstinputlisting{ast.ml}
+\lstinputlisting{asttoimst.ml}
+\lstinputlisting{ast.ml}
+\lstinputlisting{compile.ml}
+\lstinputlisting{imst.ml}
+\lstinputlisting{imsttocode.ml}
+\lstinputlisting{parser.mly}
+\lstinputlisting{scanner.mll}
+\lstinputlisting{verishort.ml}
+\lstinputlisting{vsc.ml}
 \end{document}
