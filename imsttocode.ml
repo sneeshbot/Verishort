@@ -143,16 +143,17 @@ let print_lib libname width libmap =
 	print_endline code;
 *)
 
-let print_libmod libname libset = 			
-	
-	(*if (StringSet.mem libname libset) then*)
-	
+let print_libmod libname libwidth actualname = 			
 	let code = "" in
 	let filename = (Filename.current_dir_name ^ "/stdlib/" ^ libname ^ ".v") in
 	let chan = open_in filename in
 	try
 		while true; do
-			print_endline (input_line chan);
+			let rawline = input_line chan in
+			let replname = Str.global_replace (Str.regexp_string libname) actualname rawline in
+			let replwidth = Str.global_replace (Str.regexp_string "WIDTHMINUSONE") (string_of_int (libwidth - 1)) replname in
+			let repllogwidth = Str.global_replace (Str.regexp_string "LOGWIDTH") (string_of_int (get_min_bit_width (Int64.of_int width))) repllogwidth in
+			print_endline repllogwidth 
 		done;
 	with End_of_file -> close_in chan;
 		
@@ -165,7 +166,7 @@ let print_libmod libname libset =
 	
 let print_module m =
 	let libset = StringSet.empty in  	
-	if m.im_libmod then print_libmod m.im_libmod_name libset else (
+	if m.im_libmod then print_libmod m.im_libmodname m.im_libmodwidth m.im_modname else (
    print_module_sig m;
    List.iter print_decl m.im_declarations;
    List.iter print_assignment m.im_assignments;

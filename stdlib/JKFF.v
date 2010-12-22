@@ -1,15 +1,16 @@
-module JKFF(_clock,_reset,_J,_K,_E,_Q,_QNOT);
+module JKFF(_clock,_reset,_J,_K,_E,_Q,_QNOT, _return);
 	input _clock;
 	input _reset;
-	input _J;
-	input _K;
-	input _E;
-	output _Q;
-	output _QNOT;
-	
-	reg Q_reg;
+	input [WIDTHMINUSONE:0] _J;
+	input [WIDTHMINUSONE:0] _K;
+	input [WIDTHMINUSONE:0] _E;
+	output [WIDTHMINUSONE:0] _Q;
+	output [WIDTHMINUSONE:0] _QNOT;
+	output [WIDTHMINUSONE:0] _return;
+	reg [WIDTHMINUSONE:0] Q_reg;
 	assign _Q = Q_reg;
 	assign _QNOT = ~Q_reg;
+	assign _return = Q_reg;
 	
 	always @ (posedge _clock) begin
 		if (_reset) begin 
