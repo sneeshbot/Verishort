@@ -75,7 +75,7 @@ let update_inst_count modname inst_map =
 	if StringMap.mem modname inst_map then StringMap.add modname ((StringMap.find modname inst_map) + 1) inst_map else StringMap.add modname 1 inst_map
 
 let rec print_if_necessary str = function
-   [] -> ["." ^ str ^ "(" ^ str ^ ")"]
+   [] -> ["._" ^ str ^ "(_" ^ str ^ ")"]
    | (id, _) :: tl -> if id = str then [] else print_if_necessary str tl
 
 
