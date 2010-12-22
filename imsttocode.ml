@@ -32,6 +32,7 @@ let decimal_to_binary_and_pad d bits =
 *)
 
 module StringMap = Map.Make(String)
+module StringSet = Set.Make(String)
 
 let mod_id id = "_" ^ id
 
@@ -118,7 +119,53 @@ let print_decl (typ, str, width) = print_endline ((if typ = ImWire then "wire" e
 
 let print_assignment (lv, expr) = print_string ("assign " ^ (stringify_lvalue lv)); print_string (" = " ^ (stringify_expression expr)); print_endline ";"
 
-let print_module m = if m.im_libmod then raise (Failure("standard library not supported yet!")) else
+(*let rec replace_char str char_orig char_new pos = 
+	try while true; do 
+		replace_char (str.(String.index_from str pos char_orig) <- char_new) char_orig char_new (pos+1)
+	done
+	with Not_found -> str
+
+let print_lib libname width libmap = 
+	if StringMap.mem libname libmap then StringMap.add libname ((StringMap.find libname libmap) + 1) libmap else StringMap.add libname 1 libmap;
+	
+	let libnum = StringMap.find libname libmap in
+	
+	let code = "" in
+	let chan = open_in (libname ^ ".v") in
+	try
+		while true; do
+			code = (code ^ (input_line chan) ^ "\n")
+		done;
+	with End_of_file -> close_in chan
+		
+	replace_char code '#' ((string_of_int libnum).(0)) 0;
+	
+	print_endline code;
+*)
+
+let print_libmod libname libset = 			
+	
+	(*if (StringSet.mem libname libset) then*)
+	
+	let code = "" in
+	let filename = (Filename.current_dir_name ^ "/stdlib/" ^ libname ^ ".v") in
+	let chan = open_in filename in
+	try
+		while true; do
+			print_endline (input_line chan);
+		done;
+	with End_of_file -> close_in chan;
+		
+	
+	
+	ignore(StringSet.add libname libset)
+	
+	(*else ()*)
+	
+	
+let print_module m =
+	let libset = StringSet.empty in  	
+	if m.im_libmod then print_libmod m.im_libmod_name libset else (
    print_module_sig m;
    List.iter print_decl m.im_declarations;
    List.iter print_assignment m.im_assignments;
@@ -134,7 +181,9 @@ let print_module m = if m.im_libmod then raise (Failure("standard library not su
    print_endline "always @ (negedge _clock) begin";
    List.iter print_statement m.im_alwaysnegedge;
    print_endline "end";
-   print_endline "endmodule"
+   print_endline "endmodule")
+   
+   
    
 let _ =
   let inname = if Array.length Sys.argv > 1 then Sys.argv.(1) else "stdin" in
@@ -142,5 +191,5 @@ let _ =
   let lexbuf = Lexing.from_channel inchannel in
   try 
 	  let sourcecode = List.rev (Parser.program Scanner.token lexbuf) in
-  	  List.iter print_module (translate sourcecode)
+	    List.iter  print_module (translate sourcecode)
   with Parse_Failure(msg, pos) -> print_endline (inname ^ ":" ^ (string_of_int pos.Lexing.pos_lnum) ^":" ^ (string_of_int (pos.Lexing.pos_cnum - pos.Lexing.pos_bol)) ^": " ^ msg )
