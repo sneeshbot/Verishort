@@ -212,7 +212,7 @@ expr:
 	| XNOR lvalue %prec NOT {Reduct(Xnor, $2, Parsing.symbol_start_pos ()) }
 	| RESET { Reset(Parsing.symbol_start_pos ()) }
 	| CONCAT LPAREN concat_list RPAREN { Concat(List.rev $3, Parsing.symbol_start_pos ()) } /* Concatenation */
-	| ID LPAREN binding_in_list_opt SEMICOLON binding_out_list_opt RPAREN SEMICOLON { Inst($1, List.rev $3, List.rev $5, Parsing.symbol_start_pos ()) } /*Module instantiation */
+	| ID LPAREN binding_in_list_opt SEMICOLON binding_out_list_opt RPAREN { Inst($1, List.rev $3, List.rev $5, Parsing.symbol_start_pos ()) } /*Module instantiation */
 
 concat_list:
 		concat_item { [$1] }
