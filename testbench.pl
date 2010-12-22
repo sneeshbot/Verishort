@@ -16,25 +16,24 @@ foreach $verishortTestFile (@verishorts) {
 	#Get the translated and goal filenames
 	$originalVerishortTestFile = $verishortTestFile;
 	$verishortTestFile =~  s/\.vs/\.v/;
-	$translated = $verishortTestFile;
+	$translatedFile = $verishortTestFile;
 	$verishortTestFile =~ s/\.v/Goal\.v/;
 	$goal = $verishortTestFile;
 	
-	print "./printer $originalVerishortTestFile\n";
-	print `cat $originalVerishortTestFile\n`;
-	print `./printer $originalVerishortTestFile\n`;
-
+	#print "./printer $originalVerishortTestFile\n";
+	#print `cat $originalVerishortTestFile\n`;
+	#print `./printer $originalVerishortTestFile\n`;
 
 	#Translate the verishort
-	$translate = "./vsc $originalVerishortTestFile";
+	$translate = "./vsc $originalVerishortTestFile | tee $translatedFile | sed 's/_//g' | sed 's/_//g' | sed 's/_//g'";
 	print "$translate\n";
-	print `$translate\n`;
+	print `$translate\n`; #This line actually executes
 	
-	$translated =~ s/\s//;
-	$goal =~ s/\s//;
+	#$translate =~ s/\s//;
+	#$goal =~ s/\s//;
 
 	#Test the differences between the file.  If there are no differences, that test was passed
-	$test = "diff $translated $goal";
+	$test = "diff -ie $translatedFile $goal";
 	print "$test\n";
 	$diffResult = `$test`;
 	print "$diffResult";
@@ -54,8 +53,8 @@ foreach $verishortTestFile (@verishorts) {
 	#print "$compileResult";
 	
 	
-	#Remove the compiled file\
-	$remove = "rm $translated";
+	#Remove the compiled file
+	$remove = "rm $translatedFile";
 	print "$remove\n";
 	print `$remove`;
 	
