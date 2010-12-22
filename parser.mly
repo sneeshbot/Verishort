@@ -197,11 +197,10 @@ expr:
 	| expr AND expr { Binop($1, And, $3, Parsing.symbol_start_pos ())}
 	| expr OR expr {Binop($1, Or, $3, Parsing.symbol_start_pos ()) }
 	| expr XOR expr {Binop($1, Xor, $3, Parsing.symbol_start_pos ()) }
-	| expr NAND expr {Binop($1, Nand, $3, Parsing.symbol_start_pos ()) }
-	| expr NOR expr {Binop($1, Nor, $3, Parsing.symbol_start_pos ())}
 	| expr XNOR expr { Binop($1, Xnor, $3, Parsing.symbol_start_pos ())}
 	| expr LSHIFT expr {Binop($1, Lshift, $3, Parsing.symbol_start_pos ()) }
 	| expr RSHIFT expr { Binop($1, Rshift, $3, Parsing.symbol_start_pos ())}
+	| LPAREN expr RPAREN { $2 }
 	| NOT expr { Unary(Not, $2, Parsing.symbol_start_pos ()) }
 	| PLUS expr %prec UPLUS { Unary(Plus, $2, Parsing.symbol_start_pos ()) }
 	| MINUS expr %prec UPLUS { Unary(Minus, $2, Parsing.symbol_start_pos ()) } 

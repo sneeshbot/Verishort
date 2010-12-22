@@ -6,25 +6,27 @@ let rec invert_binary_actual n x =
     (x.[n] <- (if x.[n] = '1' then '0' else '1'); invert_binary_actual (n-1) x)
 	and invert_binary x = invert_binary_actual (String.length x - 1) (String.copy x)
 
-	let subtract_one bin bits= 
-		decimal_to_binary (Int64.pred (Int64.from_string ("0b" ^ bin))) bits
+let rec add_one_actual n x =
+  if n < 0 then x (*discard overflow bit*)
+  else
+  if x.[n] = '1' then (x.[n] <- '0'; add_one_actual (n-1) x) else (x.[n] <- '1'; x)
+and add_one x = add_one_actual (String.length x -1) (String.copy x)
 
-let rec dec_conv d [] = match d with
-	  0 -> lst
-	| _ -> dec_conv (d/2)(d mod 2)::lst
+
+
+let rec dec_conv d str = 
+	if (Int64.compare d Int64.zero) = 0 then str else dec_conv (Int64.shift_right d 1) (Int64.to_string (Int64.rem d (Int64.of_int 2)) ^ str)
 
 let rec pad_binary b bits = 
 	if List.length b = bits then b
 	else pad_binary 0::b
 
 let decimal_to_binary_and_pad d bits =
-	let is_negative = (Int64.compare d 0 < 0) in
+	let is_negative = (Int64.compare d Int64.zero < 0) in
 
-	let bin = dec_conv (if is_negative then Int64.neg d else d) in
+	let bin_string = dec_conv (if is_negative then Int64.neg d else d) in
 
-	let bin_string = List.fold_left string_of_int "" (pad_binary bin bits) in
-
-	if is_negative then subtract_one(invert_binary bin_string) bits else bin_string
+	if is_negative then add_one(invert_binary bin_string) bits else bin_string
 
 let mod_id id = "_" ^ id
 
@@ -42,9 +44,9 @@ let im_op_to_string = function
 	| ImAnd -> "&"
 	| ImOr -> "|"
 	| ImXor -> "^"
-	| ImNand -> "!&"
-	| ImNor -> "!|"
-	| ImXnor -> "!^"
+	| ImNand -> "~&"
+	| ImNor -> "~|"
+	| ImXnor -> "~^"
 	| ImLshift -> "<<"
 	| ImRshift -> ">>"
 	| ImNot -> "" (* TODO *)

@@ -37,10 +37,10 @@ rule token = parse
 	| "<<" { LSHIFT }
 	| ">>" { RSHIFT }
 	| '\'' { SIGEXT }
-	| "!&" { NAND }
-	| "!|" { NOR }
-	| "!^" { XNOR }
-	| '!'  { NOT }
+	| "~&" { NAND }
+	| "~|" { NOR }
+	| "~^" { XNOR }
+	| '~'  { NOT }
 	| '&'  { AND }
 	| '|'  { OR }
 	| '^'  { XOR }

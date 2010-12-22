@@ -232,11 +232,9 @@ let rec get_max_bit_width_expr environ immod expr = match expr with
     | And -> max (get_max_bit_width_expr environ immod e1) (get_max_bit_width_expr environ immod e2)
     | Or -> max (get_max_bit_width_expr environ immod e1) (get_max_bit_width_expr environ immod e2)
     | Xor -> max (get_max_bit_width_expr environ immod e1) (get_max_bit_width_expr environ immod e2)
-    | Nand -> max (get_max_bit_width_expr environ immod e1) (get_max_bit_width_expr environ immod e2)
-    | Nor -> max (get_max_bit_width_expr environ immod e1) (get_max_bit_width_expr environ immod e2)
     | Xnor -> max (get_max_bit_width_expr environ immod e1) (get_max_bit_width_expr environ immod e2)
     | Lshift -> get_max_bit_width_expr environ immod e1 | Rshift -> get_max_bit_width_expr environ immod e1
-		| Not -> raise (Parse_Failure("Internal compiler error 003: contact manufacturer for assistance.", pos)))
+	| _ -> raise (Parse_Failure("Internal compiler error 003: contact manufacturer for assistance.", pos)))
   | Signext(bits, expr, _) -> bits
   | Reduct(op, lvalue, _) -> 1
   | Unary(_, expr, _) -> get_max_bit_width_expr environ immod expr
@@ -261,11 +259,9 @@ let rec get_min_bit_width_expr environ immod expr = match expr with
     | And -> max (get_min_bit_width_expr environ immod e1) (get_min_bit_width_expr environ immod e2)
     | Or -> max (get_min_bit_width_expr environ immod e1) (get_min_bit_width_expr environ immod e2)
     | Xor -> max (get_min_bit_width_expr environ immod e1) (get_min_bit_width_expr environ immod e2)
-    | Nand -> max (get_min_bit_width_expr environ immod e1) (get_min_bit_width_expr environ immod e2)
-    | Nor -> max (get_min_bit_width_expr environ immod e1) (get_min_bit_width_expr environ immod e2)
     | Xnor -> max (get_min_bit_width_expr environ immod e1) (get_min_bit_width_expr environ immod e2)
     | Lshift -> get_min_bit_width_expr environ immod e1 | Rshift -> get_min_bit_width_expr environ immod e1
-		| Not -> raise (Parse_Failure("Internal compiler error 003: contact manufacturer for assistance.", pos)))
+	| _ -> raise (Parse_Failure("Internal compiler error 003: contact manufacturer for assistance.", pos)))
   | Signext(bits, expr, _) -> bits
   | Reduct(op, lvalue, _) -> 1
   | Unary(_, expr, _) -> get_min_bit_width_expr environ immod expr
