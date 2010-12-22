@@ -517,7 +517,7 @@ let translate_module environ vshmod =
     let ret = { ret with im_declarations = decls; im_assignments = assigns } in
 		let (immod, _, _) = 
 			List.fold_left (fun (immod1, _, count) stmt -> translate_stmt environ immod1 stmt count false) (ret, [], 0) vshmod.statements in
-		let finalmod = { immod with im_alwaysall = List.rev immod.im_alwaysall } in
+		let finalmod = { immod with im_alwaysall = List.rev immod.im_alwaysall; im_instantiations = List.rev immod.im_instantiations; im_assignments = List.rev immod.im_assignments } in
 		 ignore (List.fold_left (fun lst1 lval1 -> (match lval1 with
 		  ImSubscript(name, s) -> check_assignment_duplication s s name lst1 vshmod.modpos
 		| ImRange(name, up, lo) -> check_assignment_duplication up lo name lst1 vshmod.modpos

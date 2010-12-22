@@ -25,8 +25,8 @@ printer.cmo: printer.ml
 #	ocamlc -c compile.ml # compile translator
 asttoimst.cmo: asttoimst.ml
 	ocamlc -c asttoimst.ml
-#imsttocode.cmo: imsttocode.ml
-#	ocamlc -c imstotocode.ml
+imsttocode.cmo: imsttocode.ml
+	ocamlc -c imsttocode.ml
 	
 #all
 #vsc: parser.cmo scanner.cmo verishort.cmo 
@@ -37,12 +37,12 @@ asttoimst.cmo: asttoimst.ml
 #all: imsttocode
 
 
-printer: ast.cmo imst.cmo parser.cmo scanner.cmo asttoimst.cmo printer.cmo 
-	ocamlc -o printer ast.cmo imst.cmo parser.cmo scanner.cmo asttoimst.cmo printer.cmo 
-all: printer
+vsc: ast.cmo imst.cmo parser.cmo scanner.cmo asttoimst.cmo imsttocode.cmo 
+	ocamlc -o vsc ast.cmo imst.cmo parser.cmo scanner.cmo asttoimst.cmo imsttocode.cmo 
+all: vsc
 
 clean:
-	rm -f ast.cmi ast.cmo asttoimst.cmo compile.cmi compile.cmo imst.cmo output_file parser.cmi parser.cmo parser.ml parser.mli printer printer.cmi printer.cmo scanner.cmi scanner.cmo scanner.ml *.cm*
+	rm -f ast.cmi ast.cmo asttoimst.cmo compile.cmi compile.cmo imst.cmo output_file parser.cmi parser.cmo parser.ml parser.mli printer printer.cmi printer.cmo scanner.cmi scanner.cmo scanner.ml *.cm* vsc
 
 run: vsc
 	./testbench.pl

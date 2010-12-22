@@ -1,5 +1,7 @@
+open Ast
 open Imst
-open Compile
+open Parser
+open Asttoimst
 
 (*let rec invert_binary_actual n x = 
   if n < 0 then x else
@@ -33,7 +35,7 @@ module StringMap = Map.Make(String)
 
 let mod_id id = "_" ^ id
 
-let im_op_to_string = function
+let op_to_string = function
 	  ImPlus -> "+"
 	| ImMinus -> "-"
 	| ImMultiply -> "*"
@@ -59,7 +61,7 @@ let stringify_lvalue = function
 	| ImRange(id, ind1, ind2) -> ((mod_id id) ^ "[" ^ (string_of_int ind1) ^ ":" ^ (string_of_int ind2) ^ "]")
 
 let stringify_concat = function
-	  ImConcatLit(replications,literal) -> string_of_int replications ^ "{" ^ (stringify_binary_literal literal)  ^ "}"
+	  ImConcatLit(replications,literal) -> raise (Failure("duh."))
 	| ImConcatLvalue(replications, lv) -> string_of_int replications ^ "{" ^ (stringify_lvalue lv) ^ "}"
 
 let stringify_concats lst = 
@@ -76,33 +78,31 @@ let rec print_if_necessary str = function
    [] -> ["." ^ str ^ "(" ^ str ^ ")"]
    | (id, _) :: tl -> if id = str then [] else print_if_necessary str tl
 
-let print_inst (modname, bindlst1, bindlst2) inst_map = 
-    let new_map = update_inst_count modname inst_map in
-    let ind = StringMap.find modname new_map in
-    print_string (modname ^ " ___" ^ modname ^ (string_of_int ind) ^ "(");
-    print_string String.concat ", " ((List.map (fun(id, exp) -> "._" ^ id ^ "(" ^ (stringify_expression exp) ^ ")") (bindlst1 @ bindlst2)) @ (
-    print_if_necessary "clock" bindlst1) @ (print_if_necessary "reset" bindlst1));
-    print_endline ");";
-    new_map
 
 let rec stringify_expression = function
 	  ImLiteral(x,_) -> Int64.to_string x
-	| ImLValue(x) -> stringify_lvalue x
+	| ImLvalue(x) -> stringify_lvalue x
 	| ImBinop(x, op, y) -> "(" ^ (stringify_expression x) ^ (op_to_string op) ^ (stringify_expression y ) ^ ")"
 	| ImReduct(op, y) -> "(" ^ (op_to_string op) ^ (stringify_lvalue y) ^ ")"
 	| ImUnary(op, expr) -> "(" ^ (op_to_string op) ^ (stringify_expression expr) ^ ")"
 	| ImConcat(x) -> stringify_concats x
 	| ImNoexpr -> ""
 
-let print_assignments asses = List.iter print_assignment asses
-
-let rec print_case (b, stmt, _) = print_endline ((string_of_int (String.length b)) ^ "'b" ^ b ^ ": "); print_endline "begin"; List.iter print_statement stmt; print_endline "end"
+let print_inst inst_map (modname, bindlst1, bindlst2) = 
+    let new_map = update_inst_count modname inst_map in
+    let ind = StringMap.find modname new_map in
+    print_string (modname ^ " ___" ^ modname ^ (string_of_int ind) ^ "(");
+    print_string (String.concat ", " ((List.map (fun(id, exp) -> "._" ^ id ^ "(" ^ (stringify_expression exp) ^ ")") (bindlst1 @ bindlst2)) @ (
+    print_if_necessary "clock" bindlst1) @ (print_if_necessary "reset" bindlst1)));
+    print_endline ");";
+    new_map
+let rec print_case (b, stmt) = print_endline ((string_of_int (String.length b)) ^ "'b" ^ b ^ ": "); print_endline "begin"; List.iter print_statement stmt; print_endline "end"
 and print_case_list lst = List.iter print_case lst
-and rec print_statement = function
+and print_statement = function
 	  ImNop -> ()
-	| ImIf(pred,tru,fal) -> print_string "if ("; print_expression im_expr; print_endline ")"; print_endline "begin"; List.iter print_statement tru; print_endline "end\nelse\nbegin"; List.iter print_statement fal; print_endline "end"
-	| ImCase(lv,csl) -> print_string "casex("; print_lvalue lv; print_endline ")"; print_case_list csl; print_endline "endcase"
-	| ImRegAssign(lv, expr) -> print_lvalue lv; print_string "="; print_expression expr; print_endline ";"
+	| ImIf(pred,tru,fal) -> print_endline ("if (" ^ (stringify_expression pred) ^ ")"); print_endline "begin"; List.iter print_statement tru; print_endline "end\nelse\nbegin"; List.iter print_statement fal; print_endline "end"
+	| ImCase(lv,csl) -> print_endline ("casex(" ^ (stringify_lvalue lv) ^ ")"); print_case_list csl; print_endline "endcase"
+	| ImRegAssign(lv, expr) -> print_string (stringify_lvalue lv); print_string "="; print_string (stringify_expression expr); print_endline ";"
 
 let print_module_sig m = 
   (* print module sig *)
@@ -116,22 +116,31 @@ let print_module_sig m =
   (* print decls *)
 let print_decl (typ, str, width) = print_endline ((if typ = ImWire then "wire" else "reg") ^ " " ^ (if width == 1 then "" else ("[" ^ (string_of_int (width - 1)) ^ ":0] ")) ^ str ^ ";\n")  
 
-let print_assignment (lv, expr) = print_string "assign "; print_lvalue lv; print_string " = "; print_expression expr; print_endline ";"
+let print_assignment (lv, expr) = print_string ("assign " ^ (stringify_lvalue lv)); print_string (" = " ^ (stringify_expression expr)); print_endline ";"
 
-let print_module m = if m.libmod then raise (Failure("standard library not supported yet!")) else
+let print_module m = if m.im_libmod then raise (Failure("standard library not supported yet!")) else
    print_module_sig m;
    List.iter print_decl m.im_declarations;
    List.iter print_assignment m.im_assignments;
-   List.iter print_instantiation m.im_instantiations;
+   ignore (List.fold_left print_inst StringMap.empty m.im_instantiations);
    print_endline "always @ (*) begin";
-   List.iter print_statement m.imalwaysall;
-   print_endline "if (reset) begin";
-   List.iter (fun (typ, name, _) -> if type = ImReg then print_endline ("_" ^ name ^ "= 0;") else ()) m.im_declarations;
+   List.iter print_statement m.im_alwaysall;
+   print_endline "if (_reset) begin";
+   List.iter (fun (typ, name, _) -> if typ = ImReg then print_endline ("_" ^ name ^ "= 0;") else ()) m.im_declarations;
    print_endline "end\nend";
-   print_endline "always @ (posedge clock) begin";
-   List.iter print_statement m.imalwaysposedge;
+   print_endline "always @ (posedge _clock) begin";
+   List.iter print_statement m.im_alwaysposedge;
    print_endline "end";
-   print_endline "always @ (negedge clock) begin";
-   List.iter print_statement m.imalwaysnegedge;
+   print_endline "always @ (negedge _clock) begin";
+   List.iter print_statement m.im_alwaysnegedge;
    print_endline "end";
    print_endline "endmodule"
+   
+let _ =
+  let inname = if Array.length Sys.argv > 1 then Sys.argv.(1) else "stdin" in
+  let inchannel = if Array.length Sys.argv > 1 then Pervasives.open_in Sys.argv.(1) else stdin in
+  let lexbuf = Lexing.from_channel inchannel in
+  try 
+	  let sourcecode = List.rev (Parser.program Scanner.token lexbuf) in
+  	  List.iter print_module (translate sourcecode)
+  with Parse_Failure(msg, pos) -> print_endline (inname ^ ":" ^ (string_of_int pos.Lexing.pos_lnum) ^":" ^ (string_of_int (pos.Lexing.pos_cnum - pos.Lexing.pos_bol)) ^": " ^ msg )
