@@ -28,6 +28,9 @@ let decimal_to_binary_and_pad d bits =
 
 	if is_negative then add_one(invert_binary bin_string) bits else bin_string
 *)
+
+module StringMap = Map.Make(String)
+
 let mod_id id = "_" ^ id
 
 let im_op_to_string = function
@@ -59,24 +62,37 @@ let stringify_concat = function
 	  ImConcatLit(replications,literal) -> string_of_int replications ^ "{" ^ (stringify_binary_literal literal)  ^ "}"
 	| ImConcatLvalue(replications, lv) -> string_of_int replications ^ "{" ^ (stringify_lvalue lv) ^ "}"
 
-let print_concats lst = 
+let stringify_concats lst = 
 	let concat_string = List.map stringify_concat lst in
 
-	print_string ("{" ^ (String.concat ", " concat_string) ^ "}")
+       "{" ^ (String.concat ", " concat_string) ^ "}"
 
 (*let stringify_binary_literal (x,y) = (string_of_int y) ^ "'b" ^ decimal_to_binary_and_pad x y*)
 
+let update_inst_count modname inst_map = 
+	if StringMap.mem modname inst_map then StringMap.add modname ((StringMap.find modname inst_map) + 1) inst_map else StringMap.add modname 1 inst_map
 
-let print_inst inst = 
+let rec print_if_necessary str = function
+   [] -> ["." ^ str ^ "(" ^ str ^ ")"]
+   | (id, _) :: tl -> if id = str then [] else print_if_necessary str tl
 
-let rec print_expression = function
-	  ImLiteral(x,_) -> print_string(Int64.to_string x)
-	| ImLValue(x) -> print_lvalue(stringify_lvalue x)
-	| ImBinop(x, op, y) -> print_string "("; print_expression x; print_string(op_to_string op); print_expression y; print_string ")";
-	| ImReduct(op, y) -> print_string ("(" ^ (op_to_string op)); print_lvalue y; print_string ")"
-	| ImUnary(op, expr) -> print_string ("(" ^ (op_to_string op)); print_expression expr; print_string ")" 
-	| ImConcat(x) -> print_string "concat("; print_concats x; print_string ")"
-	| ImNoexpr -> ()
+let print_inst (modname, bindlst1, bindlst2) inst_map = 
+    let new_map = update_inst_count modname inst_map in
+    let ind = StringMap.find modname new_map in
+    print_string (modname ^ " ___" ^ modname ^ (string_of_int ind) ^ "(");
+    print_string String.concat ", " ((List.map (fun(id, exp) -> "._" ^ id ^ "(" ^ (stringify_expression exp) ^ ")") (bindlst1 @ bindlst2)) @ (
+    print_if_necessary "clock" bindlst1) @ (print_if_necessary "reset" bindlst1));
+    print_endline ");";
+    new_map
+
+let rec stringify_expression = function
+	  ImLiteral(x,_) -> Int64.to_string x
+	| ImLValue(x) -> stringify_lvalue x
+	| ImBinop(x, op, y) -> "(" ^ (stringify_expression x) ^ (op_to_string op) ^ (stringify_expression y ) ^ ")"
+	| ImReduct(op, y) -> "(" ^ (op_to_string op) ^ (stringify_lvalue y) ^ ")"
+	| ImUnary(op, expr) -> "(" ^ (op_to_string op) ^ (stringify_expression expr) ^ ")"
+	| ImConcat(x) -> stringify_concats x
+	| ImNoexpr -> ""
 
 let print_assignments asses = List.iter print_assignment asses
 
@@ -92,12 +108,30 @@ let print_module_sig m =
   (* print module sig *)
   let mod_args = (m.im_inputs, m.im_outputs) in
   let mod_arg_list (inputs, outputs) = 
-  String.concat ", " (List.map (fun (name, _) -> name) (inputs @ outputs)) in
-  (print_string ("module " ^ m.im_modname ^ "(" ^ (mod_arg_list mod_args) ^ ");\n");
-  List.iter (fun (id, width ) -> print_string ("input " ^ (if width == 1 then "" else ("[" ^ string_of_int (width - 1) ^ ":0] ")) ^ id ^ ";\n")) (fst mod_args);
-  List.iter (fun (id, width ) -> print_string ("output " ^ (if width == 1 then "" else ("[" ^ string_of_int (width - 1) ^ ":0] ")) ^ id ^ ";\n")) (snd mod_args))
+  String.concat ", " (List.map (fun (name, _) -> "_" ^ name) (inputs @ outputs)) in
+  (print_string ("module _" ^ m.im_modname ^ "(" ^ (mod_arg_list mod_args) ^ ");\n");
+  List.iter (fun (id, width ) -> print_string ("input " ^ (if width == 1 then "" else ("[" ^ string_of_int (width - 1) ^ ":0] ")) ^ "_" ^ id ^ ";\n")) (fst mod_args);
+  List.iter (fun (id, width ) -> print_string ("output " ^ (if width == 1 then "" else ("[" ^ string_of_int (width - 1) ^ ":0] ")) ^ "_" ^ id ^ ";\n")) (snd mod_args))
   
   (* print decls *)
 let print_decl (typ, str, width) = print_endline ((if typ = ImWire then "wire" else "reg") ^ " " ^ (if width == 1 then "" else ("[" ^ (string_of_int (width - 1)) ^ ":0] ")) ^ str ^ ";\n")  
 
 let print_assignment (lv, expr) = print_string "assign "; print_lvalue lv; print_string " = "; print_expression expr; print_endline ";"
+
+let print_module m = if m.libmod then raise (Failure("standard library not supported yet!")) else
+   print_module_sig m;
+   List.iter print_decl m.im_declarations;
+   List.iter print_assignment m.im_assignments;
+   List.iter print_instantiation m.im_instantiations;
+   print_endline "always @ (*) begin";
+   List.iter print_statement m.imalwaysall;
+   print_endline "if (reset) begin";
+   List.iter (fun (typ, name, _) -> if type = ImReg then print_endline ("_" ^ name ^ "= 0;") else ()) m.im_declarations;
+   print_endline "end\nend";
+   print_endline "always @ (posedge clock) begin";
+   List.iter print_statement m.imalwaysposedge;
+   print_endline "end";
+   print_endline "always @ (negedge clock) begin";
+   List.iter print_statement m.imalwaysnegedge;
+   print_endline "end";
+   print_endline "endmodule"
