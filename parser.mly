@@ -244,9 +244,9 @@ binding_out_list_opt:
 	| binding_out_list { $1 }
 
 binding_in:
-		lvalue ASSIGN expr { $1, $3 }
-	| CLOCK ASSIGN expr { Identifier("clock"), $3}
-	| RESET ASSIGN expr { Identifier("reset"), $3}
+	  ID ASSIGN expr { $1, $3 }
+	| CLOCK ASSIGN expr { "clock", $3}
+	| RESET ASSIGN expr { "reset", $3}
 
 binding_out:
-		lvalue ASSIGN lvalue { $1, $3 }		
+		ID ASSIGN lvalue { $1, $3 }		

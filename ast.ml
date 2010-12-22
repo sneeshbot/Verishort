@@ -21,8 +21,8 @@ and lvalue =
     Identifier of string
   | Subscript of string * expr
   | Range of string * expr * expr
-and binding_in = lvalue * expr
-and binding_out = lvalue * lvalue
+and binding_in = string * expr
+and binding_out = string * lvalue
 
 type condition = Posedge | Negedge | Expression of expr
 

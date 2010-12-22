@@ -36,7 +36,7 @@ imstotocode: ast.cmo imst.cmo parser.cmo scanner.cmo asttoimst.cmo imsttocode.cm
 all: imsttocode
 
 clean:
-	rm -f ast.cmi ast.cmo asttoimst.cmo compile.cmi compile.cmo imst.cmo output_file parser.cmi parser.cmo parser.ml parser.mli printer printer.cmi printer.cmo scanner.cmi scanner.cmo scanner.ml
+	rm -f ast.cmi ast.cmo asttoimst.cmo compile.cmi compile.cmo imst.cmo output_file parser.cmi parser.cmo parser.ml parser.mli printer printer.cmi printer.cmo scanner.cmi scanner.cmo scanner.ml *.cm*
 
 run: vsc
 	./testbench.pl

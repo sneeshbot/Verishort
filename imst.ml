@@ -20,8 +20,8 @@ and im_lvalue =
   | ImRange of string * int * int
   
 type im_assignment = im_lvalue * im_expr
-
-type im_instantiation = string * im_assignment list * im_assignment list
+type im_binding = string * im_expr
+type im_instantiation = string * im_binding list * im_binding list
   
 type im_always_stmt =
     ImNop
