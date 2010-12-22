@@ -60,7 +60,7 @@ let op_to_string = function
 
 let stringify_lvalue = function
 	  ImSubscript(id, ind) -> ((mod_id id) ^ "[" ^ (string_of_int ind) ^ "]")
-	| ImRange(id, ind1, ind2) -> ((mod_id id) ^ "[" ^ (string_of_int ind1) ^ ":" ^ (string_of_int ind2) ^ "]")
+	| ImRange(id, ind1, ind2) -> ((mod_id id) ^ if(ind1 <> ind2) then"[" ^ (string_of_int ind1) ^ ":" ^ (string_of_int ind2) ^ "]" else "")
 
 let stringify_concat = function
 	  ImConcatLit(replications,literal) -> raise (Failure("duh."))
