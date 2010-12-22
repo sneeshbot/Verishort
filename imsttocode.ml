@@ -49,10 +49,8 @@ let im_op_to_string = function
 	| ImRshift -> ">>"
 	| ImNot -> "" (* TODO *)
 
-
 let stringify_lvalue = function
-	  ImIdentifier(id) ->  (mod_id id)
-	| ImSubscript(id, ind) -> ((mod_id id) ^ "[" ^ string_of_int ind ^ "]")
+	ImSubscript(id, ind) -> ((mod_id id) ^ "[" ^ string_of_int ind ^ "]")
 
 let stringify_concat = function
 	  ImConcatLit(replications,literal) -> replications ^ "{" ^ (stringify_literal literal)  ^ "}"
@@ -74,17 +72,27 @@ let rec print_expression = function
 	| ImConcat(x,_) -> print_string "concat("; print_concats x; print_string ")"
 	| ImNoexpr(_) -> print_endline ""
 
-let print_assignment (lv, expr) = print_string "assign"; print_lvalue lv; print_string "="; print_expression expr
-
 let print_assignments asses = List.iter print_assignment asses
 
 let print_case (b, stmt, _) = print_string(b ^ "b: "); print_statement stmt
 let print_case_list list = List.iter print_case list
 
 let print_statement = function
-	  ImNop(_) -> print_endline ""
-	| ImIf(pred,tru,fal, _) -> print_endline "begin"; print_string "if"; print_string("(" ^ print_expression im_expr ^ ")"); print_newline (); List.iter print_statement tru; print_endline "else"; List.iter print_statement fal; print_endline "end"
-	| ImCase(lv,csl,_) -> print_endline "case"; print_string("(" ^ print_expression lv ^ ")"); print_newline (); print_case list csl; print_endline "endcase"
+	  ImNop -> ()
+	| ImIf(pred,tru,fal) -> print_endline "begin"; print_string "if"; print_string("(" ^ print_expression im_expr ^ ")"); print_newline (); List.iter print_statement tru; print_endline "else"; List.iter print_statement fal; print_endline "end"
+	| ImCase(lv,csl) -> print_endline "case"; print_string("(" ^ print_expression lv ^ ")"); print_newline (); print_case list csl; print_endline "endcase"
 	| ImRegAssign(lv, expr) -> print_string lv; print_string "="; print_expression expr
 
+let print_module_sig m = 
+  (* print module sig *)
+  let mod_args = (m.im_inputs, m.im_outputs) in
+  let mod_arg_list (inputs, outputs) = 
+  String.concat ", " (List.map (fun (name, _) -> name) (inputs @ outputs)) in
+  (output_string out_file ("module " ^ m.im_modname ^ "(" ^ (mod_arg_list mod_args) ^ ");\n");
+  List.iter (fun (id, width ) -> output_string out_file ("input " ^ (if width == 1 then "" else ("[" ^ string_of_int (width - 1) ^ ":0] ")) ^ id ^ ";\n")) (fst mod_args);
+  List.iter (fun (id, width ) -> output_string out_file ("output " ^ (if width == 1 then "" else ("[" ^ string_of_int (width - 1) ^ ":0] ")) ^ id ^ ";\n")) (snd mod_args))
+  
+  (* print decls *)
+let print_decl (typ, str, width) = print_endline ((if typ = ImWire then "wire" else "reg") ^ " " ^ (if width == 1 then "" else ("[" ^ (string_of_int (width - 1)) ^ ":0] ")) ^ str ^ ";\n")  
 
+let print_assignment (lv, expr) = print_string "assign "; print_lvalue lv; print_string " = "; print_expression expr; print_endline ";"
