@@ -24,11 +24,14 @@ foreach $verishortTestFile (@verishorts) {
 	print `cat $originalVerishortTestFile\n`;
 	print `./printer $originalVerishortTestFile\n`;
 
-=comment
+
 	#Translate the verishort
 	$translate = "./vsc $originalVerishortTestFile";
 	print "$translate\n";
 	print `$translate\n`;
+	
+	$translated =~ s/\s//;
+	$goal =~ s/\s//;
 
 	#Test the differences between the file.  If there are no differences, that test was passed
 	$test = "diff $translated $goal";
@@ -55,7 +58,6 @@ foreach $verishortTestFile (@verishorts) {
 	$remove = "rm $translated";
 	print "$remove\n";
 	print `$remove`;
-=cut
 	
 	#Increment
 	print "\n";
@@ -64,6 +66,7 @@ foreach $verishortTestFile (@verishorts) {
 
 #Check the error checker
 
+=comment
 #Get every test file into an array
 @verishorts=`ls error_tests/*.vs`;
 
@@ -114,14 +117,13 @@ foreach $verishortTestFile (@verishorts) {
 	$remove = "rm $translated";
 	print "$remove\n";
 	print `$remove`;
-=cut
 	
 	#Increment
 	print "\n";
 	$totalTests++;
 	}
 
-
+=cut
 
 #Print final messages
 print "==========================\n";
