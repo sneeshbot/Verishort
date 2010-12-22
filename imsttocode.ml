@@ -49,30 +49,31 @@ let im_op_to_string = function
 	| ImXnor -> "~^"
 	| ImLshift -> "<<"
 	| ImRshift -> ">>"
-	| ImNot -> "" (* TODO *)
+	| ImNot -> "~"
 
 let stringify_lvalue = function
-	ImSubscript(id, ind) -> ((mod_id id) ^ "[" ^ string_of_int ind ^ "]")
+	  ImSubscript(id, ind) -> ((mod_id id) ^ "[" ^ (string_of_int ind) ^ "]")
+	| ImRange(id, ind1, ind2) -> ((mod_id id) ^ "[" ^ (string_of_int ind1) ^ ":" ^ (string_of_int ind2) ^ "]")
 
 let stringify_concat = function
-	  ImConcatLit(replications,literal) -> replications ^ "{" ^ (stringify_literal literal)  ^ "}"
-	| ImConcatLvalue(replications, lv) -> replications ^ "{" ^ (stringify_lvalue lv) ^ "}"
+	  ImConcatLit(replications,literal) -> string_of_int replications ^ "{" ^ (stringify_binary_literal literal)  ^ "}"
+	| ImConcatLvalue(replications, lv) -> string_of_int replications ^ "{" ^ (stringify_lvalue lv) ^ "}"
 
 let print_concats lst = 
-	let concated = List.map stringify_concat lst in
-	let commaed = List.map (fun s -> s ^ ",") lst in 
-	print_string ("{" ^ (String.sub commaed 0 ((String.length commaed) - 1)) ^ "}")
+	let concat_string = List.map stringify_concat lst in
 
-let stringify_literal (x,y) = decimal_to_binary_and_pad x y
+	print_string ("{" ^ (String.concat ", " concat_string) ^ "}")
+
+let stringify_binary_literal (x,y) = (string_of_int y) ^ "'b" ^ decimal_to_binary_and_pad x y
 
 let rec print_expression = function
-	  ImLiteral(x,y) -> print_string(stringify_literal (x,y))
-	| ImLValue(x,_) -> print_lvalue(stringify_lvalue x)
-	| ImBinop(x, op, y,_) -> print_string "("; print_expression x; print_string(op_to_string op); print_expression y; print_string ")";
-	| ImReduct(op, y,_) -> print_string (op_to_string op); print_lvalue y
-	| ImUnary() (* TODO *)
-	| ImConcat(x,_) -> print_string "concat("; print_concats x; print_string ")"
-	| ImNoexpr(_) -> print_endline ""
+	  ImLiteral(x,y) -> print_string(stringify_binary_literal (x,y))
+	| ImLValue(x) -> print_lvalue(stringify_lvalue x)
+	| ImBinop(x, op, y) -> print_string "("; print_expression x; print_string(op_to_string op); print_expression y; print_string ")";
+	| ImReduct(op, y) -> print_string ("(" ^ (op_to_string op)); print_lvalue y; print_string ")"
+	| ImUnary(op, expr) -> print_string ("(" ^ (op_to_string op)); print_expression expr; print_string ")" 
+	| ImConcat(x) -> print_string "concat("; print_concats x; print_string ")"
+	| ImNoexpr -> ()
 
 let print_assignments asses = List.iter print_assignment asses
 
