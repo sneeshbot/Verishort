@@ -4,64 +4,61 @@ input _reset;
 input _enable;
 output [7:0] _letter;
 reg [7:0] __reg_letter;
-
 wire [3:0] _c;
-
 reg [3:0] _count;
-
-assign _c = _count;
-assign _letter = __reg_letter;
+assign _c[3:0] = _count[3:0];
+assign _letter[7:0] = __reg_letter[7:0];
 always @ (*) begin
-if (_enable[0:0])
+if (_enable)
 begin
-casex(_c)
+casex(_c[3:0])
 4'b0001: 
 begin
-__reg_letter=72;
+__reg_letter[7:0]=72;
 end
 4'b0010: 
 begin
-__reg_letter=101;
+__reg_letter[7:0]=101;
 end
 4'b0011: 
 begin
-__reg_letter=108;
+__reg_letter[7:0]=108;
 end
 4'b0100: 
 begin
-__reg_letter=108;
+__reg_letter[7:0]=108;
 end
 4'b0101: 
 begin
-__reg_letter=111;
+__reg_letter[7:0]=111;
 end
 4'b0110: 
 begin
-__reg_letter=32;
+__reg_letter[7:0]=32;
 end
 4'b0111: 
 begin
-__reg_letter=87;
+__reg_letter[7:0]=87;
 end
 4'b1000: 
 begin
-__reg_letter=111;
+__reg_letter[7:0]=111;
 end
 4'b1001: 
 begin
-__reg_letter=114;
+__reg_letter[7:0]=114;
 end
 4'b1010: 
 begin
-__reg_letter=108;
+__reg_letter[7:0]=108;
 end
 4'b1011: 
 begin
-__reg_letter=100;
+__reg_letter[7:0]=100;
 end
 4'b1100: 
 begin
-__reg_letter=33;
+__reg_letter[7:0]=33;
 end
 endcase
 end
@@ -69,12 +66,10 @@ else
 begin
 end
 if (_reset) begin
-__reg_letter= 0;
-_count= 0;
-end
+__reg_letter= 0;_count= 0;end
 end
 always @ (posedge _clock) begin
-_count=(_count+1);
+_count[3:0]=(_count[3:0]+1);
 end
 always @ (negedge _clock) begin
 end
