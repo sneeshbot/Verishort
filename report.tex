@@ -27,7 +27,7 @@ title=\lstname,                 % show the filename of files included with \lsti
 
 \begin{document}
 \title{Verishort HDL}
-\author{Anish Bramhandkar \ Elba Garza \ Scott Rogowski \ Ruijie Song\\\\
+\author{Anish Bramhandkar \ Elba Garza \ Scott Rogowski \ Ruijie Song}
 \renewcommand{\today}{December 22, 2010}
 \maketitle
 
@@ -86,9 +86,15 @@ title=\lstname,                 % show the filename of files included with \lsti
 %%%%%%%%%%%%%%%%%%%%%%%%%
 %TODO: Together?
 %%%%%%%%%%%%%%%%%%%%%%%%%
-\section{Tutorial}
-    \subsection{A First Example}
-    \subsection{Compiling and Running a Verishort file}
+\section{Understanding, Compiling, and Running a Verishort file}
+This section refers to the Verishort input file \texttt{gcd.vs} found in the source tarball and included at the end of this document.\\\\
+This module calculates the greatest common denominator of the eight-bit inputs \texttt{num0} and \texttt{num1} (obviously with a non-recursive algorithm as this is hardware).  As with any Verishort file, the order of lines in a file is parameters, followed by declarations (parameters and registers), followed by statements (if-else blocks, clock blocks, and instantiations among other things).\\\\
+
+To compile the Verishort compiler\footnote{On Unix, we require that you have OCaml and the OCaml libraries installed.  On Debian-based systems, the packages are called \texttt{ocaml} and \texttt{ocaml-libs} respectively.}, you can use the Makefile as follows:\\\\
+\texttt{make all}\\\\
+This will generate the executable file \texttt{vsc}.  To compile your Verishort file, run \texttt{vsc} with your filename as the first parameter.  Alternatively, the compiler will also accept standard input if no parameter is specified.  If standard in is used as input, no output file can be specified and the compiler will print to standard out.  If the input parameter is used, the second parameter may be the desired output file:\\\\
+\texttt{./vsc gcd.vs gcd.v}\\\\
+This file can now be used with any Verilog stim files.  \texttt{gcdstim.v} is a working Verilog stimulation file that can be used to verify the output of the Verishort compiler for \texttt{gcd.vs}.
 
 \section{Reference Manual}
     \subsection{Lexical Conventions}
@@ -659,6 +665,7 @@ for (i = 0; i < 16; i = i + 1) \{\\
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%    
 \section{Architectural Design}
     \subsection{Architecture}
+    \begin{figure}\begin{center}\includegraphics[width=0.7\textwidth]{blockdiagram-inkscape.pdf}\end{center}\end{figure}
     Like any other compiler, Verishort uses a lexer, a parser, and a translator.  The lexer parses the input into tokens.  The parser parses the tokens to generate an abstract syntax tree for Verishort, with position information for future error reporting.  It also checks for syntactical correctness.  Then, the translator creates a new Verilog-friendly syntax tree by translating the original Verishort tree, accounting for semantic correctness and generating all the necessart temporaries.  Finally, the code generator takes the Verilog syntax tree and outputs syntactically correct Verilog code.
     \subsection{Error Recovery}
 	Syntactic errors are reported during parsing. The grammar has a few rules designed to catch specific errors, but it is difficult to anticipate them, and unexpected errors are reported immediately.\\ 
@@ -707,11 +714,13 @@ and the challenge overwhelmed.
 
 \section{Example files}
 \subsection{Gcd.vs}
-\lstinputlisting{gcd.vs}
+\lstinputlisting{examples/gcd.vs}
 \subsection{Gcd.v}
-\lstinputlisting{gcd.v}
+\lstinputlisting{examples/gcd.v}
+\subsection{Stim file for gcd}
+\lstinputlisting{examples/gcdstim.v}
 \subsection{Helloworld.vs}
-\lstinputlisting{helloworld.vs}
+\lstinputlisting{examples/helloworld.vs}
 \subsection{Helloworld.v}
-\lstinputlisting{helloworld.v}
+\lstinputlisting{examples/helloworld.v}
 \end{document}
