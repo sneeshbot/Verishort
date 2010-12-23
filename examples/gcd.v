@@ -1,14 +1,16 @@
-module _gcd(_clock, _reset, _num0, _num1, _start, _greatest);
+module _gcd(_clock, _reset, _num0, _num1, _start, _greatest, _success);
 input _clock;
 input _reset;
 input [7:0] _num0;
 input [7:0] _num1;
 input _start;
 output [7:0] _greatest;
+output _success;
 reg [7:0] __reg_greatest;
 
 reg _found;
 
+assign _success = _found;
 assign _greatest[7:0] = __reg_greatest[7:0];
 always @ (*) begin
 if (_start)
