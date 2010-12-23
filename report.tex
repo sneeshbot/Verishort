@@ -669,6 +669,11 @@ for (i = 0; i < 16; i = i + 1) \{\\
 % TODO: Scott
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Testing Plan}
+We had two strategies to test our language.  Our first was to build small test cases, individual bits of the verishort, 33 in all.  For example, there was a test for implementing multiple modules, a test for block comments, and a test for gating clocks.  Initially, we planned to implement a testbench in perl using diff which would loop through these test cases to compare the outputs of our compiler with an 'expected output' generated verilog by hand.  This worked for a short amount of time until we actually started running the compiler and found minor but continuing differences between the outputs of the compiler and the generated verilog.  The differences did not indicate errors but rather differences in ordering and naming (we began putting _ in front of all variables for example).  For this reason, eventually, this system was no longer worth maintaining as it was faster just to check the generated verilog by sight to ensure correctness.  However, the verishort test cases remained useful and we ran through them to ensure that the compiler was handling output correctly.
+
+Our second strategy was to build small but non-trivial programs and ensure that our compiler translated them into working verilog and ran them with stim files.  Three of these files were built, helloworld, gcd, and a memoryarray.  These can be run by running 'make helloworld', 'make gcd', 'make memoryarray'.  Admittedly, the stim files were a last minute addition but they definitely helped us successfully finish this project and, in my opinion, dramatically show how effective and simple our language is.
+
+Checking our error catching capabilities was essentially done on the fly.
     \subsection{Purpose}
     \subsection{Test Suites}
     \subsection{Test Reasoning}
