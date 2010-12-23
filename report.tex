@@ -11,7 +11,7 @@ numberstyle=\footnotesize,      % the size of the fonts that are used for the li
 numbersep=5pt,                  % how far the line-numbers are from the code
 frame=single,	                % adds a frame around the code
 tabsize=2,	                % sets default tabsize to 2 spaces
-captionpos=t,                   % sets the caption-position to bottom
+captionpos=b,                   % sets the caption-position to bottom
 breaklines=true,                % sets automatic line breaking
 breakatwhitespace=false,        % sets if automatic breaks should only happen at whitespace
 title=\lstname,                 % show the filename of files included with \lstinputlisting;
@@ -90,7 +90,6 @@ title=\lstname,                 % show the filename of files included with \lsti
 \section{Tutorial}
     \subsection{A First Example}
     \subsection{Compiling and Running a Verishort file}
-    \subsection{More Examples}
 
 \section{Reference Manual}
     \subsection{Lexical Conventions}
@@ -158,7 +157,7 @@ title=\lstname,                 % show the filename of files included with \lsti
         \item{\texttt{\& }}
         \item{\texttt{$\mid$}}
         \item{\texttt{\^}}
-        \item{\texttt{\~\^}} 
+        \item{\texttt{\textasciitilde \^}} 
         \item{\texttt{<<}} 
         \item{\texttt{>>}}
         \end{itemize}
@@ -669,15 +668,9 @@ for (i = 0; i < 16; i = i + 1) \{\\
 % TODO: Scott
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Testing Plan}
-We had two strategies to test our language.  Our first was to build small test cases, individual bits of the verishort, 33 in all.  For example, there was a test for implementing multiple modules, a test for block comments, and a test for gating clocks.  Initially, we planned to implement a testbench in perl using diff which would loop through these test cases to compare the outputs of our compiler with an 'expected output' generated verilog by hand.  This worked for a short amount of time until we actually started running the compiler and found minor but continuing differences between the outputs of the compiler and the generated verilog.  The differences did not indicate errors but rather differences in ordering and naming (we began putting _ in front of all variables for example).  For this reason, eventually, this system was no longer worth maintaining as it was faster just to check the generated verilog by sight to ensure correctness.  However, the verishort test cases remained useful and we ran through them to ensure that the compiler was handling output correctly.
+We had two strategies to test our language.  Our first was to build small 33 test cases.  For example, there was a test for implementing multiple modules, a test for block comments, and a test for gating clocks.  Initially, we planned to implement a test bench in Perl using the Posix command \texttt{diff} which would loop through these test cases to compare the output of our compiler with hand-generated expected Verilog code.  This worked until we actually started running the compiler and found minor but crucial differences between the output of the compiler and the generated Verilog code.  The differences did not indicate errors but rather differences in ordering and naming (we began putting an underscore in front of all variable names, for example, to avoid conflicts with Verilog reserved words).  For this reason,  this system was no longer worth maintaining as it was more efficient to manually verify contents due to continued differences in naming and ordering.  However, the Verishort test cases remained useful and we began using them as miniature regression tests to ensure that the compiler was handling output correctly.
 
-Our second strategy was to build small but non-trivial programs and ensure that our compiler translated them into working verilog and ran them with stim files.  Three of these files were built, helloworld, gcd, and a memoryarray.  These can be run by running 'make helloworld', 'make gcd', 'make memoryarray'.  Admittedly, the stim files were a last minute addition but they definitely helped us successfully finish this project and, in my opinion, dramatically show how effective and simple our language is.
-
-Checking our error catching capabilities was essentially done on the fly.
-    \subsection{Purpose}
-    \subsection{Test Suites}
-    \subsection{Test Reasoning}
-    \subsection{Tools}
+Our second strategy was to build small but non-trivial programs and ensure that our compiler translated them into working Verilog and ran them with stim files.  Three of these files were built: helloworld, gcd, and a memoryarray.  These can be run by running 'make helloworld', 'make gcd', 'make memoryarray'.  (These are in the Makefile for the convenience of the tester.)
     
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Mushy stuff that can be done at the end.
@@ -688,25 +681,36 @@ don't wait until the last minute. There was a time crunch at the end, even thoug
 relatively ahead of schedule all semester long. In the end, even when it seems most of the compiler 
 is built, there are a lot of loose ends to tie up, and random bugs to squash. Just as you may think 
 you are finished, two or three more errors will pop up.\\\\
-Concerning Verishort, we realized it was very bad to try to improve on a language that not our whole team 
-knew. We ended up having to rely on Scott, who is taking a design class which required Verilog, for 
+Concerning Verishort, we realized it was very bad to try to improve on a language that we were not entirely familiar with. We ended up having to rely on Scott, who is taking a design class which required Verilog, for 
 every single detail on Verilog. We all knew a bit about the language, but not very specific details 
 that needed clarifying every now and then. Had we all known and written Verilog code on a regular 
-basis, we wouldn't have had a huge bottleneck for language knowledge.\\\\ 
+basis, we wouldn't have had a huge learning curve for language knowledge.  In addition, we should have had a clearer vision for what subset of the Verilog language we were going to implement.\\\\ 
 Granted, we had a few weeks shaven off our development time since we switched our project from Natural 
 to Verishort, but even then, we should have chosen more carefully in that respect. It was a challenge, 
 and the challenge overwhelmed. 
 \newpage
         
 \section{Codebase}
+\subsection{Ast.ml}
 \lstinputlisting{ast.ml}
+\subsection{Asttoimst.ml}
 \lstinputlisting{asttoimst.ml}
-\lstinputlisting{ast.ml}
-\lstinputlisting{compile.ml}
+\subsection{Imst.ml}
 \lstinputlisting{imst.ml}
+\subsection{Imsttocode.ml}
 \lstinputlisting{imsttocode.ml}
+\subsection{Parser.mly}
 \lstinputlisting{parser.mly}
+\subsection{Scanner.mll}
 \lstinputlisting{scanner.mll}
-\lstinputlisting{verishort.ml}
-\lstinputlisting{vsc.ml}
+
+\section{Example files}
+\subsection{Gcd.vs}
+\lstinputlisting{gcd.vs}
+\subsection{Gcd.v}
+\lstinputlisting{gcd.v}
+\subsection{Helloworld.vs}
+\lstinputlisting{helloworld.vs}
+\subsection{Helloworld.v}
+\lstinputlisting{helloworld.v}
 \end{document}
