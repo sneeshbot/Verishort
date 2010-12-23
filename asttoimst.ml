@@ -13,7 +13,7 @@ type enviro = {
 }
   
 let string_map_args map mods = 
-  List.fold_left (fun m mod1 -> StringMap.add mod1.modname (mod1.inputs, mod1.outputs) m) map mods 
+  List.fold_left (fun m mod1 -> StringMap.add mod1.modname (mod1.inputs, if mod1.returnwidth > 0 then (("return", mod1.returnwidth, Lexing.dummy_pos) :: mod1.outputs) else mod1.outputs) m) map mods 
 
 let string_map_params map mods = 
   List.fold_left (fun m mod1 -> StringMap.add mod1.modname mod1.parameters m) map mods
@@ -197,6 +197,7 @@ let to_im_lvalue environ immod lval pos = match lval with
      let subscr2 = Int64.to_int (eval_expr immod.im_modname environ expr2) in
      if subscr1 < 0 || subscr2 < 0|| subscr1 >= width || subscr2 >= width then raise (Parse_Failure("Bus index out of bounds.", pos)) 
      else if subscr1 < subscr2 then raise (Parse_Failure("Bus ranges must be specified from most significant to least significant.", pos))
+     else if subscr1 = subscr2 && width != 1 then ImSubscript(id, subscr1)
      else ImRange(id, subscr1, subscr2)
 
 let get_lvalue_length environ immod lvalue pos = match (to_im_lvalue environ immod lvalue pos) with
@@ -530,11 +531,7 @@ let translate_module environ vshmod =
 let set_standard_library_module_info mod1 = if mod1.libmod then (
 	if mod1.libmod_width < 1 then raise (Parse_Failure("Invalid standard module width.", mod1.modpos))
 	else match mod1.libmod_name with
-	  "SRL" -> {mod1 with inputs = [("clock", 1, Lexing.dummy_pos); ("reset", 1, Lexing.dummy_pos); 
-                                  ("S", mod1.libmod_width, Lexing.dummy_pos); ("E", mod1.libmod_width, Lexing.dummy_pos)];
-												outputs = [("Q", mod1.libmod_width, Lexing.dummy_pos);("QNOT", mod1.libmod_width, Lexing.dummy_pos)];
-												returnwidth = mod1.libmod_width; } 
-  | "JKL" -> {mod1 with inputs = [("clock", 1, Lexing.dummy_pos); ("reset", 1, Lexing.dummy_pos); 
+	"JKL" -> {mod1 with inputs = [("clock", 1, Lexing.dummy_pos); ("reset", 1, Lexing.dummy_pos); 
                                   ("J", mod1.libmod_width, Lexing.dummy_pos); ("K", mod1.libmod_width, Lexing.dummy_pos);
 																	("E", mod1.libmod_width, Lexing.dummy_pos)];
 												outputs = [("Q", mod1.libmod_width, Lexing.dummy_pos);("QNOT", mod1.libmod_width, Lexing.dummy_pos)];
@@ -559,22 +556,6 @@ let set_standard_library_module_info mod1 = if mod1.libmod then (
                                   ("J", mod1.libmod_width, Lexing.dummy_pos); ("K", mod1.libmod_width, Lexing.dummy_pos)];
 												outputs = [("Q", mod1.libmod_width, Lexing.dummy_pos);("QNOT", mod1.libmod_width, Lexing.dummy_pos)];
 												returnwidth = mod1.libmod_width; }
-	| "MUX" -> {mod1 with inputs = [("clock", 1, Lexing.dummy_pos); ("reset", 1, Lexing.dummy_pos); 
-                                  ("IN", mod1.libmod_width, Lexing.dummy_pos); ("SEL", get_min_bit_width (Int64.of_int mod1.libmod_width), Lexing.dummy_pos)];
-												outputs = [("OUT", 1, Lexing.dummy_pos)];
-												returnwidth = 1; }
-	| "DEMUX" -> {mod1 with inputs = [("clock", 1, Lexing.dummy_pos); ("reset", 1, Lexing.dummy_pos); 
-                                  ("IN", 1, Lexing.dummy_pos); ("SEL", get_min_bit_width (Int64.of_int mod1.libmod_width), Lexing.dummy_pos)];
-												outputs = [("OUT", mod1.libmod_width, Lexing.dummy_pos)];
-												returnwidth = mod1.libmod_width; }
-	| "DECODE" -> {mod1 with inputs = [("clock", 1, Lexing.dummy_pos); ("reset", 1, Lexing.dummy_pos); 
-                                  ("IN", get_min_bit_width (Int64.of_int mod1.libmod_width), Lexing.dummy_pos)];
-												outputs = [("OUT", mod1.libmod_width, Lexing.dummy_pos)];
-												returnwidth = mod1.libmod_width; }
-	| "ENCODE" -> {mod1 with inputs = [("clock", 1, Lexing.dummy_pos); ("reset", 1, Lexing.dummy_pos); 
-                                  ("IN", mod1.libmod_width, Lexing.dummy_pos)];
-												outputs = [("OUT", get_min_bit_width (Int64.of_int mod1.libmod_width), Lexing.dummy_pos)];
-												returnwidth = get_min_bit_width (Int64.of_int mod1.libmod_width); }
 	| _ -> raise (Parse_Failure("Unsupported standard module name.", mod1.modpos)))
 	 else mod1
 (* translate: mod_decl list -> im_mod_decl list *)  
