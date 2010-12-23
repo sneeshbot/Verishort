@@ -1,5 +1,6 @@
-module gcd(input num0[8], num1[8], start; output greatest[8]) {
+module gcd(input num0[8], num1[8], start; output greatest[8], success) {
 	register found;
+	success = found;
 	
 	if (start) {
 		if (num0<num1) {
