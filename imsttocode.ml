@@ -63,7 +63,7 @@ let rec stringify_expression = function
 let print_inst out inst_map (modname, bindlst1, bindlst2) = 
     let new_map = update_inst_count modname inst_map in
     let ind = StringMap.find modname new_map in
-    output_string out (modname ^ " ___" ^ modname ^ (string_of_int ind) ^ "(");
+    output_string out ("_" ^ modname ^ " ___" ^ modname ^ (string_of_int ind) ^ "(");
     output_string out (String.concat ", " ((List.map (fun(id, exp) -> "._" ^ id ^ "(" ^ (stringify_expression exp) ^ ")") (bindlst1 @ bindlst2)) @ (
     print_if_necessary "clock" bindlst1) @ (print_if_necessary "reset" bindlst1)));
     output_string out ");\n";
