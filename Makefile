@@ -46,19 +46,20 @@ helloworld: vsc examples/helloworld.vs examples/hellostim.v
 	iverilog examples/helloworld.v examples/hellostim.v -o examples/helloworld.out
 	./examples/helloworld.out
 
-gcd: vsc examples/gcd.v examples/gcdstim.v
+gcd: vsc examples/gcd.vs examples/gcdstim.v
 	./vsc examples/gcd.vs > examples/gcd.v
 	iverilog examples/gcd.v examples/gcdstim.v -o examples/gcd.out
 	./examples/gcd.out
 
-memoryarray: vsc examples/helloworld.v examples/hellostim.v
-	iverilog examples/helloworld.v examples/hellostim.v -o examples/hello.out
-	./examples/hello.out
+memoryarray: vsc examples/memoryarray.vs examples/memoryarraystim.v
+	./vsc examples/memoryarray.vs > examples/memoryarray.v
+	iverilog examples/memoryarray.v examples/memoryarraystim.v -o examples/memoryarray.out
+	./examples/memoryarray.out
 
 
 
 clean:
-	rm -f ast.cmi ast.cmo asttoimst.cmo compile.cmi compile.cmo imst.cmo output_file parser.cmi parser.cmo parser.ml parser.mli printer printer.cmi printer.cmo scanner.cmi scanner.cmo scanner.ml *.cm* vsc examples/gcd.v examples/gcd.out examples/helloworld.v examples/helloworld.out
+	rm -f ast.cmi ast.cmo asttoimst.cmo compile.cmi compile.cmo imst.cmo output_file parser.cmi parser.cmo parser.ml parser.mli printer printer.cmi printer.cmo scanner.cmi scanner.cmo scanner.ml *.cm* vsc examples/gcd.v examples/gcd.out examples/helloworld.v examples/helloworld.out examples/memoryarray.out examples/memoryarray.v
 
 run: vsc
 	./testbench.pl

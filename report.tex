@@ -28,7 +28,6 @@ title=\lstname,                 % show the filename of files included with \lsti
 \begin{document}
 \title{Verishort HDL}
 \author{Anish Bramhandkar \ Elba Garza \ Scott Rogowski \ Ruijie Song\\\\
-\textbf{Motto}: "Whatever."}
 \renewcommand{\today}{December 22, 2010}
 \maketitle
 
@@ -660,9 +659,12 @@ for (i = 0; i < 16; i = i + 1) \{\\
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%    
 \section{Architectural Design}
     \subsection{Architecture}
-    Like any other compiler, Verishort uses a lexer, a parser, and a translator.  The lexer parses the input into tokens.  The parser parses the tokens to generate an abstract syntax tree for Verishort.  It also checks for syntactical correctness.  Then, the translator creates a new Verilog-friendly syntax tree by translating the original Verishort tree, accounting for semantic correctness and temporaries that must be generated.  Finally, the code generator takes the Verilog syntax tree and outputs syntactically correct Verilog code.
+    Like any other compiler, Verishort uses a lexer, a parser, and a translator.  The lexer parses the input into tokens.  The parser parses the tokens to generate an abstract syntax tree for Verishort, with position information for future error reporting.  It also checks for syntactical correctness.  Then, the translator creates a new Verilog-friendly syntax tree by translating the original Verishort tree, accounting for semantic correctness and generating all the necessart temporaries.  Finally, the code generator takes the Verilog syntax tree and outputs syntactically correct Verilog code.
     \subsection{Error Recovery}
-	Syntactic errors are reported during parsing. The grammar has a few rules designed to catch specific errors, but it is difficult to anticipate them, and unexpected errors are reported immediately. Semantic errors are reported during translation.  Errors are reported with the input file name, line number, and character position.  The Verishort compiler is fail-fast: once an error is discovered, the compiler reports the error and terminates without attempting to continue compilation.
+	Syntactic errors are reported during parsing. The grammar has a few rules designed to catch specific errors, but it is difficult to anticipate them, and unexpected errors are reported immediately.\\ 
+	The following code, for example, attempts to anticipate the problem with attaching \texttt{else} blocks to clock edge conditions:\\
+	\texttt{IF LPAREN condition\_clock RPAREN stmt ELSE stmt \{ raise (Parse\_Failure(``Clock edge if statements may not have else clauses.'', Parsing.symbol\_start\_pos ())) \}}\\
+Semantic errors, such as assignment width mismatches, are reported during translation.  Errors are reported with the input file name, line number, and character position, which is recorded during parsing and passed to the translator in the AST.  The Verishort compiler is fail-fast: once an error is discovered, the compiler reports the error and terminates without attempting to continue compilation.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % TODO: Scott
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
