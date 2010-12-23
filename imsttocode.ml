@@ -60,7 +60,7 @@ let op_to_string = function
 
 let stringify_lvalue = function
 	  ImSubscript(id, ind) -> ((mod_id id) ^ "[" ^ (string_of_int ind) ^ "]")
-	| ImRange(id, ind1, ind2) -> ((mod_id id) ^ if((ind1=0) && (ind2=0)) then"[" ^ (string_of_int ind1) ^ ":" ^ (string_of_int ind2) ^ "]" else "")
+	| ImRange(id, ind1, ind2) -> ((mod_id id) ^ (if ((ind1 = 0) && (ind2 = 0)) then "" else "[" ^ (string_of_int ind1) ^ ":" ^ (string_of_int ind2) ^ "]"))
 
 let stringify_concat = function
 	  ImConcatLit(replications,literal) -> raise (Failure("duh."))
@@ -151,9 +151,8 @@ let print_libmod libname libwidth actualname =
 		while true; do
 			let rawline = input_line chan in
 			let replname = Str.global_replace (Str.regexp_string libname) actualname rawline in
-			let replwidth = Str.global_replace (Str.regexp_string "WIDTHMINUSONE") (string_of_int (libwidth - 1)) replname in
-			let repllogwidth = Str.global_replace (Str.regexp_string "LOGWIDTH") (string_of_int (get_min_bit_width (Int64.of_int libwidth))) replwidth in
-			print_endline repllogwidth 
+			let replwidth = Str.global_replace (Str.regexp_string "WIDTHMINUSONE") (if libwidth = 1 then "" else ("[" ^ (string_of_int (libwidth - 1)) ^ ":0]")) replname in
+			print_endline replwidth 
 		done;
 	with End_of_file -> close_in chan
 		

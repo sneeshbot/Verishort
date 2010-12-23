@@ -392,9 +392,9 @@ title=\lstname,                 % show the filename of files included with \lsti
         << >> & 	left to right \\ \hline
         < <= > >=					& 	left to right \\ \hline
         == !=				&	left to right \\ \hline
-        \& \ !\& (binary)				&	left to right \\ \hline
-        \^ \ !\^ \ (binary)		&	left to right \\ \hline
-        $\mid$ !$\mid$ (binary)				&	left to right \\ \hline
+        \& \ (binary)				&	left to right \\ \hline
+        \^ \ \textasciitilde\^ \ (binary)		&	left to right \\ \hline
+        $\mid$ (binary)				&	left to right \\ \hline
         
         \end{tabular}
         \end{center}
@@ -578,10 +578,9 @@ for (i = 0; i < 16; i = i + 1) \{\\
     After it is declared, \texttt{jkl\_16} may now be used as any normal module.
     
         \subsubsection{Latches}
-        \texttt{module SRL[n] (input S[n], E[n]; output Q[n], QNOT[n]) \\
-        module JKL[n] (input J[n], K[n], E[n]; output Q[n], QNOT[n]) \\
+        \texttt{module JKL[n] (input J[n], K[n], E[n]; output Q[n], QNOT[n]) \\
         module DL[n] (input D[n], E[n]; output Q[n], QNOT[n]) \\
-        module TL[n] (input T[n], E[n]; output Q[n], QNOT[n]}
+        module TL[n] (input T[n], E[n]; output Q[n], QNOT[n])}
         
         \subsubsection{Flipflops}
         \texttt{module DFF[n] (input D[n], S[n]; output Q[n], QNOT[n]) \\
