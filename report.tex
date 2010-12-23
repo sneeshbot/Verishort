@@ -3,9 +3,9 @@
 \usepackage{array}
 \usepackage{graphicx}
 \usepackage{listings}
-
+\usepackage{courier}
 \lstset{ %
-basicstyle=\scriptsize,       % the size of the fonts that are used for the code
+basicstyle=\scriptsize \ttfamily,       % the size of the fonts that are used for the code
 numbers=left,                   % where to put the line-numbers
 numberstyle=\footnotesize,      % the size of the fonts that are used for the line-numbers
 numbersep=5pt,                  % how far the line-numbers are from the code
@@ -27,8 +27,7 @@ title=\lstname,                 % show the filename of files included with \lsti
 
 \begin{document}
 \title{Verishort HDL}
-\author{Anish Bramhandkar \ Elba Garza \ Scott Rogowski \ Ruijie Song\\\\
-\textbf{Motto}: "Whatever."}
+\author{Anish Bramhandkar \ Elba Garza \ Scott Rogowski \ Ruijie Song}
 \renewcommand{\today}{December 22, 2010}
 \maketitle
 
@@ -70,7 +69,6 @@ title=\lstname,                 % show the filename of files included with \lsti
     code. In support of these efforts, a translator has been started and is expected to be 
     running by the date of December 22nd 2010.
 
-    \subsection{Related Work}
         \subsection{Goals of Verishort}
         \subsubsection{Short}
         We want Verishort code to be comparibly shorter than the Verilog code it creates. We want to
@@ -87,9 +85,15 @@ title=\lstname,                 % show the filename of files included with \lsti
 %%%%%%%%%%%%%%%%%%%%%%%%%
 %TODO: Together?
 %%%%%%%%%%%%%%%%%%%%%%%%%
-\section{Tutorial}
-    \subsection{A First Example}
-    \subsection{Compiling and Running a Verishort file}
+\section{Understanding, Compiling, and Running a Verishort file}
+This section refers to the Verishort input file \texttt{gcd.vs} found in the source tarball and included at the end of this document.\\\\
+This module calculates the greatest common denominator of the eight-bit inputs \texttt{num0} and \texttt{num1}.  As with any Verishort file, the order of lines in a file is parameters, followed by declarations (parameters and registers), followed by statements (if-else blocks, clock blocks, and instantiations among other things).\\\\
+
+To compile the Verishort compiler\footnote{On Unix, we require that you have OCaml and the OCaml libraries installed.  On Debian-based systems, the packages are called \texttt{ocaml} and \texttt{ocaml-libs} respectively.}, you can use the Makefile as follows:\\\\
+\texttt{make all}\\\\
+This will generate the executable file \texttt{vsc}.  To compile your Verishort file, run \texttt{vsc} with your filename as the first parameter.  Alternatively, the compiler will also accept standard input if no parameter is specified.  If standard in is used as input, no output file can be specified and the compiler will print to standard out.  If the input parameter is used, the second parameter may be the desired output file:\\\\
+\texttt{./vsc gcd.vs gcd.v}\\\\
+This file can now be used with any Verilog stim files.
 
 \section{Reference Manual}
     \subsection{Lexical Conventions}
@@ -386,7 +390,7 @@ title=\lstname,                 % show the filename of files included with \lsti
         \begin{tabular}{|>{\texttt\bgroup}l<{\egroup}|l|}
         \hline
         Operators, in order of decreasing precedence &Associativity\\ \hline
-        ! \ + \ - \ \& \ !\&	 \ \^ \ !\^ 	\ $\mid$ \ !$\mid$ (unary) \ ' (sign extension) &	 right to left \\ \hline
+        \textasciitilde \ + \ - \ \& \ \textasciitilde \&	 \ \^ \ \textasciitilde \^ 	\ $\mid$ \ !$\mid$ (unary) \ ' (sign extension) &	 right to left \\ \hline
         * \% /	& 	left to right \\ \hline
         	+ - (binary)		& 	left to right \\ \hline
         << >> & 	left to right \\ \hline
@@ -705,11 +709,13 @@ and the challenge overwhelmed.
 
 \section{Example files}
 \subsection{Gcd.vs}
-\lstinputlisting{gcd.vs}
+\lstinputlisting{examples/gcd.vs}
 \subsection{Gcd.v}
-\lstinputlisting{gcd.v}
+\lstinputlisting{examples/gcd.v}
+\subsection{Stim file for gcd.v}
+%\lstinputlisting{examples/stim}
 \subsection{Helloworld.vs}
-\lstinputlisting{helloworld.vs}
+\lstinputlisting{examples/helloworld.vs}
 \subsection{Helloworld.v}
-\lstinputlisting{helloworld.v}
+\lstinputlisting{examples/helloworld.v}
 \end{document}
