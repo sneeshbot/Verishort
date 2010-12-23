@@ -13,9 +13,8 @@ module memArray(input row[3], column[3]; output value) {
 	for (i=0; i<8; i=i+1) {
 		memRow(select=column; value = val[i]);
 		}
-	
-	
 	}
+	
 	
 	
 module memRow(input select[3]; output value) {
@@ -42,3 +41,4 @@ module decoder(input select[3]; output decoded[8]) {
 		111b:decoded=10000000b;		
 		}
 	}
+

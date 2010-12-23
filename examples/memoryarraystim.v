@@ -2,8 +2,9 @@ module stim();
 
   // reg feeds input, wires get output
   reg clk;
-  reg [3:0]row;
-  reg [3:0]column;
+  reg reset; 
+  reg [2:0]row;
+  reg [2:0]column;
   wire value;
 
   // instance the dut
@@ -23,55 +24,24 @@ module stim();
     
     reset = 0;
 	row = 1;
-	col = 5;
+	column = 5;
+    
+    #1 clk = 0;
+    #1 clk = 1; 
+	$display("Value at %d,%d:%d\n",row,column,value);
+	row = 3;
+	column = 2;
+    
+    #1 clk = 0;
+    #1 clk = 1; 
+	$display("Value at %d,%d:%d\n",row,column,value);
+	row = 6;
+	column = 0;
     
     #1 clk = 0;
     #1 clk = 1; 
 	$display("Value at %d,%d:%d\n",row,column,value);
 
-    #1 clk = 0;
-    #1 clk = 1;
-	$display("Letter %c\n", letter);
-
-    #1 clk = 0;
-    #1 clk = 1;
-	$display("Letter %c\n", letter);
-
-    #1 clk = 0;
-    #1 clk = 1;
-	$display("Letter %c\n", letter);
-
-    #1 clk = 0;
-    #1 clk = 1;
-	$display("Letter %c\n", letter);
-
-    #1 clk = 0;
-    #1 clk = 1;
-	$display("Letter %c\n", letter);
-
-    #1 clk = 0;
-    #1 clk = 1;
-	$display("Letter %c\n", letter);
-
-    #1 clk = 0;
-    #1 clk = 1;
-	$display("Letter %c\n", letter);
-
-    #1 clk = 0;
-    #1 clk = 1;
-	$display("Letter %c\n", letter);
-
-    #1 clk = 0;
-    #1 clk = 1;
-	$display("Letter %c\n", letter);
-
-    #1 clk = 0;
-    #1 clk = 1;
-	$display("Letter %c\n", letter);
-
-    #1 clk = 0;
-    #1 clk = 1;
-	$display("Letter %c\n", letter);
 
 	#1 $finish;
   end
