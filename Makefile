@@ -41,8 +41,24 @@ vsc: ast.cmo imst.cmo parser.cmo scanner.cmo asttoimst.cmo imsttocode.cmo
 	ocamlc -o vsc str.cma ast.cmo imst.cmo parser.cmo scanner.cmo asttoimst.cmo imsttocode.cmo 
 all: vsc
 
+helloworld: vsc examples/helloworld.vs examples/hellostim.v
+	./vsc examples/helloworld.vs > examples/helloworld.v
+	iverilog examples/helloworld.v examples/hellostim.v -o examples/helloworld.out
+	./examples/helloworld.out
+
+gcd: vsc examples/gcd.v examples/gcdstim.v
+	./vsc examples/gcd.vs > examples/gcd.v
+	iverilog examples/gcd.v examples/gcdstim.v -o examples/gcd.out
+	./examples/gcd.out
+
+memoryarray: vsc examples/helloworld.v examples/hellostim.v
+	iverilog examples/helloworld.v examples/hellostim.v -o examples/hello.out
+	./examples/hello.out
+
+
+
 clean:
-	rm -f ast.cmi ast.cmo asttoimst.cmo compile.cmi compile.cmo imst.cmo output_file parser.cmi parser.cmo parser.ml parser.mli printer printer.cmi printer.cmo scanner.cmi scanner.cmo scanner.ml *.cm* vsc
+	rm -f ast.cmi ast.cmo asttoimst.cmo compile.cmi compile.cmo imst.cmo output_file parser.cmi parser.cmo parser.ml parser.mli printer printer.cmi printer.cmo scanner.cmi scanner.cmo scanner.ml *.cm* vsc examples/gcd.v examples/gcd.out examples/helloworld.v examples/helloworld.out
 
 run: vsc
 	./testbench.pl
