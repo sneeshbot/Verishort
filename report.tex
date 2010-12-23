@@ -668,6 +668,11 @@ for (i = 0; i < 16; i = i + 1) \{\\
 % TODO: Scott
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Testing Plan}
+We had two strategies to test our language.  Our first was to build small test cases, individual bits of the verishort, 33 in all.  For example, there was a test for implementing multiple modules, a test for block comments, and a test for gating clocks.  Initially, we planned to implement a testbench in perl using diff which would loop through these test cases to compare the outputs of our compiler with an 'expected output' generated verilog by hand.  This worked for a short amount of time until we actually started running the compiler and found minor but continuing differences between the outputs of the compiler and the generated verilog.  The differences did not indicate errors but rather differences in ordering and naming (we began putting _ in front of all variables for example).  For this reason, eventually, this system was no longer worth maintaining as it was faster just to check the generated verilog by sight to ensure correctness.  However, the verishort test cases remained useful and we ran through them to ensure that the compiler was handling output correctly.
+
+Our second strategy was to build small but non-trivial programs and ensure that our compiler translated them into working verilog and ran them with stim files.  Three of these files were built, helloworld, gcd, and a memoryarray.  These can be run by running 'make helloworld', 'make gcd', 'make memoryarray'.  Admittedly, the stim files were a last minute addition but they definitely helped us successfully finish this project and, in my opinion, dramatically show how effective and simple our language is.
+
+Checking our error catching capabilities was essentially done on the fly.
     \subsection{Purpose}
     \subsection{Test Suites}
     \subsection{Test Reasoning}
@@ -677,7 +682,19 @@ for (i = 0; i < 16; i = i + 1) \{\\
 % Mushy stuff that can be done at the end.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%    
 \section{Lessons Learned}
-
+The biggest lesson that (we imagine) is stated every year is to start early, stay ahead, and 
+don't wait until the last minute. There was a time crunch at the end, even though we were 
+relatively ahead of schedule all semester long. In the end, even when it seems most of the compiler 
+is built, there are a lot of loose ends to tie up, and random bugs to squash. Just as you may think 
+you are finished, two or three more errors will pop up.\\\\
+Concerning Verishort, we realized it was very bad to try to improve on a language that not our whole team 
+knew. We ended up having to rely on Scott, who is taking a design class which required Verilog, for 
+every single detail on Verilog. We all knew a bit about the language, but not very specific details 
+that needed clarifying every now and then. Had we all known and written Verilog code on a regular 
+basis, we wouldn't have had a huge bottleneck for language knowledge.\\\\ 
+Granted, we had a few weeks shaven off our development time since we switched our project from Natural 
+to Verishort, but even then, we should have chosen more carefully in that respect. It was a challenge, 
+and the challenge overwhelmed. 
 \newpage
         
 \section{Codebase}
